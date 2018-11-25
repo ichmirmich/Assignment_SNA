@@ -1,0 +1,125 @@
+\documentclass[12pt, titlepage=true, toc=bib]{scrartcl}
+
+
+%Deutsche Silbentrennung
+%Trennung von Wörtern mit Umlauten
+%Deutsche Sprachregeln
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+
+%Schriftart
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage[activate={true, nocompatibility}, final, tracking=true, kerning=true, spacing=true, factor=1100, stretch=10, shrink=10]{microtype}
+%Selbe Schriftart für Überschriften												
+\addtokomafont{disposition}{\normalfont\bfseries}
+
+%Zeilenabstand							
+\usepackage[onehalfspacing]{setspace}
+
+%Literaturverwaltung
+\usepackage[backend=biber, style=authoryear, doi=false, isbn=false, maxcitenames=2]{biblatex}		
+%Formatierung für Anführungszeichen
+\usepackage[babel,german=quotes]{csquotes}
+%u.a. in et al. umwandeln
+\DefineBibliographyStrings{ngerman}{
+   andothers = {{et\,al\adddot}},}
+%Formatiert die Zitationsklammern
+\renewcommand{\labelnamepunct}{\addcolon\addspace}
+\renewcommand{\postnotedelim}{\addcolon\addspace}
+\DeclareFieldFormat{postnote}{#1}
+\DeclareFieldFormat{multipostnote}{#1}
+%Leerzeile zwischen den Einträgen im Literaturverzeichnis
+\setlength{\bibitemsep}{0.5\baselineskip plus 0.5\baselineskip}
+%Schrägstrich bei zwei Autor*innen
+\renewcommand{\multinamedelim}[0]{/}
+\renewcommand{\finalnamedelim}[0]{/}
+%URL bei Artikel- und Büchereinträgen entfernen
+\DeclareSourcemap{
+  \maps[datatype=bibtex]{
+    \map{
+      \pertype{article}
+      \pertype{book}
+       \step[fieldset=url, null]
+    }
+  }
+}
+
+
+\addbibresource{HA_SNA.bib}
+
+%Seitenränder
+%\usepackage[right=4	cm,]{geometry}
+
+%Paket, um Grafiken einzubinden
+%\usepackage{graphicx}
+%\usepackage{float}
+%Paket, um Grafiken davon abzuhalten, außerhalb bestimmter grenzen zu floaten [section]: verbietet gleiten außerhalb der Section
+%\usepackage[section]{placeins}
+%zum Formatieren der Bildunterschriften
+%\usepackage{caption}
+%\captionsetup{format=plain, indention=0cm, justification=justified, singlelinecheck=off, font={small, singlespacing}}
+%\captionsetup[table]{name=Tab. }
+
+%Listen
+%\usepackage{enumitem}
+
+%pdf-Dateien einbinden
+%\usepackage{pdfpages}
+
+%Anhang ohne Seitenzahl im ToC
+\makeatletter
+\let\partbackup\l@part
+\renewcommand*\l@part[2]{\partbackup{#1}{}}
+\makeatother
+
+\clubpenalty = 10000
+\widowpenalty = 10000
+\displaywidowpenalty = 10000
+
+%Verlinktes ToC
+\usepackage[colorlinks, pdfpagelabels, pdfstartview=FitH, bookmarksopen=true, bookmarksnumbered=true, linkcolor=black, urlcolor=black, plainpages=false, hypertexnames=false, citecolor=black]{hyperref}
+
+
+
+\begin{document}
+
+\titlehead{\flushleft{University of Copenhagen\\
+			Department of Political Science\\
+			Social Network Analysis (ASTK18106U)\\
+			Yevgeniy Golovchenko
+			}}
+\author{Ole Fechner, Johannes Kopf}
+\title{Title}
+
+
+\date{\normalsize{Copenhagen, \today}}
+
+\publishers{\flushleft{\normalsize{Boddinstr. 15\\
+									12053 Berlin\\
+									ole.fechner@fu-berlin.de\\
+									MA Politcal Science}}}
+
+\maketitle[0]
+
+\newpage
+
+\thispagestyle{empty}
+\tableofcontents
+
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+
+
+
+
+
+
+\newpage
+
+\printbibliography
+
+
+\end{document}
