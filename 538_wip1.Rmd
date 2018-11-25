@@ -1,0 +1,71 @@
+---
+title: "538 wip1"
+author: "Ole Fechner, Johannes Kopf"
+date: "25 November 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(igraph)
+library(dplyr)
+library(readr)
+library(knitr)
+```
+
+```{r, inlcude=F}
+## setting working directory and loading the data.
+setwd("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/538")
+tweets1 <- read.csv("IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
+tweets2 <- read.csv("IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
+tweets3 <- read.csv("IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
+tweets4 <- read.csv("IRAhandle_tweets_4.csv", stringsAsFactors = F, sep = ",")
+tweets5 <- read.csv("IRAhandle_tweets_5.csv", stringsAsFactors = F, sep = ",")
+tweets6 <- read.csv("IRAhandle_tweets_6.csv", stringsAsFactors = F, sep = ",")
+tweets7 <- read.csv("IRAhandle_tweets_7.csv", stringsAsFactors = F, sep = ",")
+tweets8 <- read.csv("IRAhandle_tweets_8.csv", stringsAsFactors = F, sep = ",")
+tweets9 <- read.csv("IRAhandle_tweets_9.csv", stringsAsFactors = F, sep = ",")
+tweets10 <- read.csv("IRAhandle_tweets_10.csv", stringsAsFactors = F, sep = ",")
+tweets11 <- read.csv("IRAhandle_tweets_11.csv", stringsAsFactors = F, sep = ",")
+tweets12 <- read.csv("IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
+tweets13 <- read.csv("IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
+```
+
+```{r, inlcude=F}
+## merging the 13 different datasets
+tweets <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13)
+```
+
+```{r, echo=F}
+## checking the number of unique twitter handles in the dataset (problem: handles can be changed -> one individual can be counted several times. though, this also applies for multiple accounts per user.) 
+print(paste("Read ", length(tweets$content), " tweets", sep="", " by ", length(unique(tweets$author)), " unique Twitter handles."))
+```
+
+```{r, include=F}
+## selecting only the retweets
+rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$content), perl=T, value=T)
+
+## extracting handle names for the senders (those who retweet)
+rt.sender <- tolower(as.character(tweets$author[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$content), perl=T)]))
+
+## extracting handle names for the recievers (those who are being retweeted)
+rt.receiver<- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
+rt.receiver <- (gsub(":", "", rt.receiver)) ## removing ":"
+rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
+
+## Registering empty entries as missing
+rt.sender[rt.sender==""] <- "<NA>"
+rt.receiver[rt.receiver==""] <- "<NA>"
+
+## a large proportion of this code is from <https://www.r-bloggers.com/generating-graphs-of-retweets-and-messages-on-twitter-using-r-and-gephi/> 
+```
+
+
+
+```{r, include=F}
+## storing reciever and sender handle names in one dataframe and removing duplicates
+handle.all <- unique(as.data.frame(c(rt.sender, rt.receiver))) 
+## renaming the handle names variable
+handle.all <- handle.all %>% rename(handle = "c(rt.sender, rt.receiver)")
+```
+
