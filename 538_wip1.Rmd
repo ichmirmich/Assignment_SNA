@@ -15,20 +15,20 @@ library(knitr)
 
 ```{r, inlcude=F}
 ## setting working directory and loading the data.
-setwd("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/538")
-tweets1 <- read.csv("IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
-tweets2 <- read.csv("IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
-tweets3 <- read.csv("IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
-tweets4 <- read.csv("IRAhandle_tweets_4.csv", stringsAsFactors = F, sep = ",")
-tweets5 <- read.csv("IRAhandle_tweets_5.csv", stringsAsFactors = F, sep = ",")
-tweets6 <- read.csv("IRAhandle_tweets_6.csv", stringsAsFactors = F, sep = ",")
-tweets7 <- read.csv("IRAhandle_tweets_7.csv", stringsAsFactors = F, sep = ",")
-tweets8 <- read.csv("IRAhandle_tweets_8.csv", stringsAsFactors = F, sep = ",")
-tweets9 <- read.csv("IRAhandle_tweets_9.csv", stringsAsFactors = F, sep = ",")
-tweets10 <- read.csv("IRAhandle_tweets_10.csv", stringsAsFactors = F, sep = ",")
-tweets11 <- read.csv("IRAhandle_tweets_11.csv", stringsAsFactors = F, sep = ",")
-tweets12 <- read.csv("IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
-tweets13 <- read.csv("IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
+getwd()
+tweets1 <- read.csv("Raw Data/IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
+tweets2 <- read.csv("Raw Data/IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
+tweets3 <- read.csv("Raw Data/IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
+tweets4 <- read.csv("Raw Data/IRAhandle_tweets_4.csv", stringsAsFactors = F, sep = ",")
+tweets5 <- read.csv("Raw Data/IRAhandle_tweets_5.csv", stringsAsFactors = F, sep = ",")
+tweets6 <- read.csv("Raw Data/IRAhandle_tweets_6.csv", stringsAsFactors = F, sep = ",")
+tweets7 <- read.csv("Raw Data/IRAhandle_tweets_7.csv", stringsAsFactors = F, sep = ",")
+tweets8 <- read.csv("Raw Data/IRAhandle_tweets_8.csv", stringsAsFactors = F, sep = ",")
+tweets9 <- read.csv("Raw Data/IRAhandle_tweets_9.csv", stringsAsFactors = F, sep = ",")
+tweets10 <- read.csv("Raw Data/IRAhandle_tweets_10.csv", stringsAsFactors = F, sep = ",")
+tweets11 <- read.csv("Raw Data/IRAhandle_tweets_11.csv", stringsAsFactors = F, sep = ",")
+tweets12 <- read.csv("Raw Data/IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
+tweets13 <- read.csv("Raw Data/IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
 ```
 
 ```{r, inlcude=F}
@@ -67,14 +67,14 @@ handle.all <- unique(as.data.frame(c(rt.sender, rt.receiver)))
 handle.all <- handle.all %>% rename(handle = "c(rt.sender, rt.receiver)")
 ```
 
-## Dieser Schritt gleicht die Twitter Handles mit der Liste tatsächlicher Trolls vom Congress ab. Wir gehen aber davon aus, dass alle Handles bereits Trolls sind -> kann deshalb übersprungen werden.
-
-```{r, eval=F}
+```{r, include=F}
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
+
+trolls_official <- 
 ## merging the complete list of official troll handle names with the ones in NBC data
-tweets_control <- tweets %>% rename(handle = author) #renaming handle name variable
-handles <- tweets_control %>% select(handle) #selecting only the handles from the data
+tweets <- tweets %>% rename(handle = author) #renaming handle name variable
+handles <- tweets %>% select(handle) #selecting only the handles from the data
 handles <- rbind(trolls_official, handles)
 handles.u <- unique(handles) ## removing duplicates
 handles.u$troll <- "troll" ## assigning all of these users a trolls
@@ -86,7 +86,7 @@ nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable ind
 
 
 ```{r, inlcude=F}
-## Attention: Damit der nächste Code Chunk nach diesem funktioniert, müssen rt.sender und rt.receiver auf gleich Länge gebracht werden. Dazu werden hier die letzten 25 Reihen in rt.sender entfert.
+## Attention: Damit der n?chste Code Chunk nach diesem funktioniert, m?ssen rt.sender und rt.receiver auf gleich L?nge gebracht werden. Dazu werden hier die letzten 25 Reihen in rt.sender entfert.
 
 rt.receiver.df <- as.data.frame(rt.receiver)
 rt.sender.df <- as.data.frame(rt.sender) 
@@ -111,7 +111,7 @@ rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
 ## creating the retweetnetwork based on the sender-receiver df and the node attributes (troll/non-troll)
 rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 ## removing self-ties
-rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
+rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
 ```
 
 ```{r, include=F}
