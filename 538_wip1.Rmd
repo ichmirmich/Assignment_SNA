@@ -60,8 +60,6 @@ rt.receiver[rt.receiver==""] <- "<NA>"
 ## a large proportion of this code is from <https://www.r-bloggers.com/generating-graphs-of-retweets-and-messages-on-twitter-using-r-and-gephi/> 
 ```
 
-
-
 ```{r, include=F}
 ## storing reciever and sender handle names in one dataframe and removing duplicates
 handle.all <- unique(as.data.frame(c(rt.sender, rt.receiver))) 
@@ -69,3 +67,63 @@ handle.all <- unique(as.data.frame(c(rt.sender, rt.receiver)))
 handle.all <- handle.all %>% rename(handle = "c(rt.sender, rt.receiver)")
 ```
 
+## Dieser Schritt gleicht die Twitter Handles mit der Liste tatsächlicher Trolls vom Congress ab. Wir gehen aber davon aus, dass alle Handles bereits Trolls sind -> kann deshalb übersprungen werden.
+
+```{r, eval=F}
+## importing handle names from the official list release in congress
+trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
+## merging the complete list of official troll handle names with the ones in NBC data
+tweets_control <- tweets %>% rename(handle = author) #renaming handle name variable
+handles <- tweets_control %>% select(handle) #selecting only the handles from the data
+handles <- rbind(trolls_official, handles)
+handles.u <- unique(handles) ## removing duplicates
+handles.u$troll <- "troll" ## assigning all of these users a trolls
+## matching trolls with the complete set of handle names in the retweet network
+nodes <- right_join(handles.u, handle.all)
+nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
+```
+
+
+
+```{r, inlcude=F}
+## Attention: Damit der nächste Code Chunk nach diesem funktioniert, müssen rt.sender und rt.receiver auf gleich Länge gebracht werden. Dazu werden hier die letzten 25 Reihen in rt.sender entfert.
+
+rt.receiver.df <- as.data.frame(rt.receiver)
+rt.sender.df <- as.data.frame(rt.sender) 
+
+rt.sender.df <- rt.sender.df[-c(10612:10636), ]
+rt.sender.df <- as.data.frame(rt.sender.df) 
+```
+
+
+
+```{r, include=F}
+## Creating a data frame from the sender-receiver objects
+rts.df <- data.frame(rt.sender.df, rt.receiver.df)
+## creating the retweetnetwork based on the sender-receiver df and the node attributes (troll/non-troll)
+rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+## removing self-ties
+rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
+```
+
+
+```{r, include=F}
+## creating the retweetnetwork based on the sender-receiver df and the node attributes (troll/non-troll)
+rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+## removing self-ties
+rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
+```
+
+```{r, include=F}
+## removing multiple edges between users
+g <- simplify(rts.g, remove.multiple = T, remove.loops = T)
+## creating a data frame with weighted and unweighted degree centrality for each profile
+df <- data.frame(name =V(g)$name,
+                 troll= V(g)$troll,indegree=degree(g,mode='in'),
+                 indegree_weighted = degree(rts.g, mode ="in"),
+                 outdegree=degree(g,mode='out'),
+                 outdegree_weighted = degree(rts.g, mode = "out"))
+## ranking users by indegree
+rank.indegree <- df %>% select(name, troll, indegree,
+                          indegree_weighted) %>% arrange(-indegree)
+```
