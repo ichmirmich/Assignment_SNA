@@ -5,6 +5,8 @@ date: "25 November 2018"
 output: pdf_document
 ---
 
+https://golovchenko.github.io/tutorials/snatrolls.html
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(igraph)
@@ -15,7 +17,6 @@ library(knitr)
 
 ```{r, inlcude=F}
 ## setting working directory and loading the data.
-getwd()
 tweets1 <- read.csv("Raw Data/IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
 tweets2 <- read.csv("Raw Data/IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
 tweets3 <- read.csv("Raw Data/IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
@@ -71,19 +72,18 @@ handle.all <- handle.all %>% rename(handle = "c(rt.sender, rt.receiver)")
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
 
-trolls_official <- 
 ## merging the complete list of official troll handle names with the ones in NBC data
 tweets <- tweets %>% rename(handle = author) #renaming handle name variable
 handles <- tweets %>% select(handle) #selecting only the handles from the data
 handles <- rbind(trolls_official, handles)
+handles <- tolower()
 handles.u <- unique(handles) ## removing duplicates
 handles.u$troll <- "troll" ## assigning all of these users a trolls
+
 ## matching trolls with the complete set of handle names in the retweet network
 nodes <- right_join(handles.u, handle.all)
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 ```
-
-
 
 ```{r, inlcude=F}
 ## Attention: Damit der n?chste Code Chunk nach diesem funktioniert, m?ssen rt.sender und rt.receiver auf gleich L?nge gebracht werden. Dazu werden hier die letzten 25 Reihen in rt.sender entfert.
