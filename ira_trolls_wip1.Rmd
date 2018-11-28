@@ -22,6 +22,7 @@ library(knitr)
 ## loading the data and setting working directory
 setwd("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data")
 tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/tweets.csv", stringsAsFactors = F, sep = ",")
+tweets_538 <- read.csv
 ```
 
 ```{r, include=F}
@@ -29,27 +30,46 @@ tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network
 print(paste("Read ", length(tweets$text), " tweets.", sep=""))
 ```
 
-```{r, include=F}
-## extracting handle variable and account_type variabe
-myvars <- c("author", "account_type") 
-account_type <- tweets_538[myvars]
-## removing doubles
-account_type.u <- unique(account_type)
-## making variable name identical
-tweets <- tweets %>% rename(handle = user_key)
-account_type.u <- account_type.u %>% rename(handle = author)
-## adding account_type variable to the NBC dataset
-account_type.u$handle <- tolower(account_type.u$handle)
-tweets <- left_join(tweets, account_type.u)
+```{r, inlcude=F}
+## loading the 538 twitter data for later comparison of account categories
+tweets1 <- read.csv("Raw Data/IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
+tweets2 <- read.csv("Raw Data/IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
+tweets3 <- read.csv("Raw Data/IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
+tweets4 <- read.csv("Raw Data/IRAhandle_tweets_4.csv", stringsAsFactors = F, sep = ",")
+tweets5 <- read.csv("Raw Data/IRAhandle_tweets_5.csv", stringsAsFactors = F, sep = ",")
+tweets6 <- read.csv("Raw Data/IRAhandle_tweets_6.csv", stringsAsFactors = F, sep = ",")
+tweets7 <- read.csv("Raw Data/IRAhandle_tweets_7.csv", stringsAsFactors = F, sep = ",")
+tweets8 <- read.csv("Raw Data/IRAhandle_tweets_8.csv", stringsAsFactors = F, sep = ",")
+tweets9 <- read.csv("Raw Data/IRAhandle_tweets_9.csv", stringsAsFactors = F, sep = ",")
+tweets10 <- read.csv("Raw Data/IRAhandle_tweets_10.csv", stringsAsFactors = F, sep = ",")
+tweets11 <- read.csv("Raw Data/IRAhandle_tweets_11.csv", stringsAsFactors = F, sep = ",")
+tweets12 <- read.csv("Raw Data/IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
+tweets13 <- read.csv("Raw Data/IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
+tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13)
 ```
 
 
 ```{r, include=F}
+## extracting handle variable and account_type variabe and removing duplicates
+myvars <- c("author", "account_type") 
+account_type <- tweets_538[myvars] %>% unique()
+
+## making variable name identical
+tweets <- tweets %>% rename(handle = user_key)
+account_type <- account_type %>% rename(handle = author)
+
+## adding account_type variable to the NBC dataset
+account_type$handle <- tolower(account_type$handle)
+tweets <- left_join(tweets, account_type)
+```
+
+```{r, include=F}
+## Code of Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
 ## selecting only the retweets
 rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T, value=T)
 
 ## extracting handle names for the senders (those who retweet)
-rt.sender <- tolower(as.character(tweets$user_key[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T)]))
+rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T)]))
 
 ## extracting handle names for the recievers (those who are being retweeted)
 rt.receiver<- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
@@ -59,28 +79,35 @@ rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
 ## Registering empty entries as missing
 rt.sender[rt.sender==""] <- "<NA>"
 rt.receiver[rt.receiver==""] <- "<NA>"
-
-## a large proportion of this code is from <https://www.r-bloggers.com/generating-graphs-of-retweets-and-messages-on-twitter-using-r-and-gephi/> 
 ```
 
 ```{r, include=F}
 ## storing reciever and sender handle names in one dataframe and removing duplicates
-handle.all <- unique(as.data.frame(c(rt.sender, rt.receiver))) 
-## renaming the handle names variable
-handle.all <- handle.all %>% rename(handle = "c(rt.sender, rt.receiver)")
+handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handle = "c(rt.sender, rt.receiver)")
+
+## There are 36.889 unique handles in the retweet dataset
 ```
 
 ```{r, include=F}
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
-## merging the complete list of official troll handle names with the ones in NBC data
-handles <- tweets %>% select(handle) #selecting only the handles from the data
-handles <- rbind(trolls_official, handles)
-handles.u <- unique(handles) ## removing duplicates
-handles.u$troll <- "troll" ## assigning all of these users a trolls
+
+## merging the complete list of official troll handle names with the handle names in NBC data
+handles <- tweets %>% select(handle) %>% unique() ## all individuals who tweeted or retweeted, without the ones who were retweeted -> 453 handles
+
+handles_comparison <- rbind(trolls_official, handles) %>% unique() ## adding all of the official troll handles and removing duplicates
+handles_comparison$troll <- "troll" ## assigning all of these users a trolls
+
 ## matching trolls with the complete set of handle names in the retweet network
-nodes <- right_join(handles.u, handle.all)
+nodes <- right_join(handles_comparison, handles.all)
+
+length(na.omit(nodes$troll)) ## there are 389 trolls in the retweet network, either retweeting or being retweeted
+
+length(nodes$troll) - (length(na.omit(nodes$troll))) ## there are 36500 non-trolls in the retweet dataset
+
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
+
+nodes_categorized <- left_join(nodes, account_type)
 ```
 
 ```{r, include=F}
