@@ -5,10 +5,10 @@ date: "24 November 2018"
 output: pdf_document
 ---
 
+"If you publish using the data, please credit NBC News, link to this page, and let us know. Send questions and projects to ben.popken@nbcuni.com or @bpopken." NBC article
+
 https://golovchenko.github.io/tutorials/snatrolls.html
 
-Aus 538-Artikel:
-"If you use the data and find anything interesting, please let us know. Send your projects to oliver.roeder@fivethirtyeight.com or @ollie."
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -22,7 +22,6 @@ library(knitr)
 ## loading the data and setting working directory
 setwd("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data")
 tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/tweets.csv", stringsAsFactors = F, sep = ",")
-tweets_538 <- read.csv
 ```
 
 ```{r, include=F}
@@ -48,11 +47,20 @@ tweets13 <- read.csv("Raw Data/IRAhandle_tweets_13.csv", stringsAsFactors = F, s
 tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13)
 ```
 
+```{r, include=F}
+## number of unique handles in the NBC dataset, who (re-)tweet themselves
+unique_tweeting_handles_in_NBC_dataset <- select(tweets, user_key) %>% unique()
+## 453 (all of them trolls, following NBC article)
+## ego-centered network of those 453 troll accounts
+```
+
 
 ```{r, include=F}
 ## extracting handle variable and account_type variabe and removing duplicates
+## number of handles for which we have accounty types (right/left/...)
 myvars <- c("author", "account_type") 
 account_type <- tweets_538[myvars] %>% unique()
+## 2843
 
 ## making variable name identical
 tweets <- tweets %>% rename(handle = user_key)
@@ -61,54 +69,139 @@ account_type <- account_type %>% rename(handle = author)
 ## adding account_type variable to the NBC dataset
 account_type$handle <- tolower(account_type$handle)
 tweets <- left_join(tweets, account_type)
+
+## for how many tweeting handles is an account type available?
+handles <- select(tweets, handle, account_type) %>% unique()
+length(na.omit(handles$account_type)) ## 443
+443/453
+## roughly 98% available
 ```
 
 ```{r, include=F}
-## Code of Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
+## Code by Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
 ## selecting only the retweets
 rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T, value=T)
 
+## number of retweets in the dataset
+rts.df <- as.data.frame(rts) %>% rename(text = rts)
+## 147,428
+147428/203451
+## ~72% of all tweets in the NBC dataset are retweets
+
 ## extracting handle names for the senders (those who retweet)
 rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T)]))
+
+## how many unique retweet senders?
+rt.sender.df <- as.data.frame(rt.sender) %>% unique() %>% rename(handle = rt.sender)
+## 333 trolls retweeted 147428 times
+
+147428/333
+## average of ~443 per troll (but distribution is probably highly skewed)
+
+453-333
+## 120 trolls only tweeted and did not retweet
 
 ## extracting handle names for the recievers (those who are being retweeted)
 rt.receiver<- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
 rt.receiver <- (gsub(":", "", rt.receiver)) ## removing ":"
 rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
 
+## how many unique retweet receivers?
+rt.receiver.df <- as.data.frame(rt.receiver) %>% unique() %>% rename(handle = rt.receiver)
+## 36,707 unique handles are being retweeted
+## calculating the share of trolls later
+
 ## Registering empty entries as missing
-rt.sender[rt.sender==""] <- "<NA>"
-rt.receiver[rt.receiver==""] <- "<NA>"
+## i think that the following code is not needed, because there are no empty entries
+## rt.sender[rt.sender==""] <- "<NA>"
+## rt.receiver[rt.receiver==""] <- "<NA>"
 ```
 
 ```{r, include=F}
 ## storing reciever and sender handle names in one dataframe and removing duplicates
 handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handle = "c(rt.sender, rt.receiver)")
+## There are 36,889 unique handles in the retweet dataset
+## There are senders (only trolls) and receivers (trolls and non-trolls) in the unique set of handles.
 
-## There are 36.889 unique handles in the retweet dataset
+36889-36707 ## 182
+## Number of unique handles increases by 182 when adding the senders. Therefore, there are 182 trolls in the data, who sent but did not receive retweets
+182/333
+## ~55% of trolls, who are senders, were not themself retweeted (are no receivers)
+
+333-182
+## There are 151 trolls who retweeted others and were themselves retweeted. They are the only nodes in our data that are both senders and reveivers (that we know of -> unknown edges).
+151/333
+## ~45% of trolls who are senders are also receivers
+
+36707-151
+## 36,556 handles receive a retweet, but do not send a retweet
+## Next, the share of trolls in these new handles will be calculated.
 ```
 
 ```{r, include=F}
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
+## 2752 trolls are defined by the list of the US congress
+## https://democrats-intelligence.house.gov/uploadedfiles/exhibit_b.pdf
+
+## all troll handles in NBC dataset
+handles <- tweets %>% select(handle) %>% unique() 
+## 453
 
 ## merging the complete list of official troll handle names with the handle names in NBC data
-handles <- tweets %>% select(handle) %>% unique() ## all individuals who tweeted or retweeted, without the ones who were retweeted -> 453 handles
+handles_trolls <- rbind(trolls_official, handles) %>% unique() 
+## 3101
+## Shoudld'nt it be 2752, if all handles in "tweets$handle" are officially trolls? 
+## "At the request of NBC News, three sources familiar with Twitter's data systems cross-referenced the list of names released by Congress, excluding any account that Twitter later restored, to create a partial database of tweets that could be recovered from the suspended accounts. The sources asked to remain anonymous to avoid any politicization of their work or being identified as possibly violating Twitter's developer policy." (NBC article)
 
-handles_comparison <- rbind(trolls_official, handles) %>% unique() ## adding all of the official troll handles and removing duplicates
-handles_comparison$troll <- "troll" ## assigning all of these users a trolls
+2752+453 
+## 3205, (if none of our sender handles occured in the list)
+
+3205-3101 
+## 104 of our handles are offical trolls following the list by the US congress
+
+453-104
+## 349 of our troll handles are not officially trolls following the list by the US congress???
+
+###################################
+## Who do we think are really trolls?
+## problem of anonymous sources
+###################################
+```
+
+```{r, include=F}
+## how many trolls are in the overall dataset, either as senders or receivers?
+trolls_official$troll <- "troll" ## assigning all of these users a troll
 
 ## matching trolls with the complete set of handle names in the retweet network
-nodes <- right_join(handles_comparison, handles.all)
+nodes <- right_join(trolls_official, handles_all)
 
-length(na.omit(nodes$troll)) ## there are 389 trolls in the retweet network, either retweeting or being retweeted
+length(na.omit(nodes$troll)) 
+## there are 88 trolls in the retweet network
 
-length(nodes$troll) - (length(na.omit(nodes$troll))) ## there are 36500 non-trolls in the retweet dataset
+############################
+## repeating the above, including the NBC sources' definition of trolls
+handles_trolls$troll <- "troll"
+nodes2 <- right_join(handles_trolls, handles_all)
+length(na.omit(nodes2$troll)) 
+## there are 389 trolls in the retweet network
 
-nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
+nodes2 <- replace(nodes2, is.na(nodes2), "non-troll") ## now we have a variable indicating wether a user is a troll
 
-nodes_categorized <- left_join(nodes, account_type)
+nodes_categorized <- left_join(nodes2, account_type)
+
+length(na.omit(nodes_categorized$account_type))
+## 394 handles are regarded as trolls by the 538 dataset
+
+length(nodes_categorized$account_type[account_type=="right"])
+
+#### next, include longer list of official trolls, as mentioned by 538
+
+
+#######
+##length(nodes$troll) - (length(na.omit(nodes$troll))) ## there are 36500 non-trolls in the retweet dataset
 ```
+
 
 ```{r, include=F}
 handles_categ <- left_join(handles.u, account_type.u) %>%
