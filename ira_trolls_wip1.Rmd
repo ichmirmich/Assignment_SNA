@@ -20,7 +20,6 @@ library(knitr)
 
 ```{r, include=F}
 ## loading the data and setting working directory
-setwd("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data")
 tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
@@ -84,7 +83,7 @@ length(na.omit(handles$account_type)) ## 443
 rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T, value=T)
 
 ## number of retweets in the dataset
-rts.df <- as.data.frame(rts) %>% rename(text = rts)
+rts.as.df <- as.data.frame(rts) %>% rename(text = rts)
 ## 147,428
 147428/203451
 ## ~72% of all tweets in the NBC dataset are retweets
@@ -180,62 +179,68 @@ length(na.omit(receiver_troll_share$troll))/length(receiver_troll_share$troll)
 
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 
-nodes_categorized <- left_join(nodes, account_type)
+nodes <- left_join(nodes, account_type)
 
-length(na.omit(nodes_categorized$account_type))
+length(na.omit(nodes$account_type))
 ## 394 handles are regarded as trolls by the 538 dataset
 
-length(nodes_categorized$account_type[account_type=="right"])
-
-#### next, include longer list of official trolls, as mentioned by 538
-
-
-#######
-##length(nodes$troll) - (length(na.omit(nodes$troll))) ## there are 36500 non-trolls in the retweet dataset
+length(nodes$account_type[account_type=="right"])
 ```
 
-
 ```{r, include=F}
-handles_categ <- left_join(handles.u, account_type.u) %>%
-  na.omit(handles_categ)
+## loading the additional user data to extract followers count
+followers <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/users.csv", stringsAsFactors = F, sep = ",")
 
-troll_nodes <- na.omit(nodes)
+followers <- select(followers, screen_name, followers_count)
+followers$screen_name <- tolower(followers$screen_name)
+followers <- followers %>% rename(handle = screen_name)
+
+tweets <- left_join(tweets, followers)
+nodes <- left_join(nodes, followers)
+
+## turning all NAs for account_type into "regular" for regular user (=non-troll)
+nodes$account_type <- replace(nodes$account_type, is.na(nodes$account_type), "regular")
 ```
 
-
 ```{r, include=F}
-### Creating a data frame from the sender-receiver objects
+## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
-### creating the retweetnetwork based on the sender-receiver df and the node attributes (troll/non-troll)
+## creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
 rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
-### removing self-ties
-rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
+## removing self-ties and multiple edges between users
+g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 ```
 
-```{r, include=F}
-## creating the retweetnetwork based on the sender-receiver df and the node attributes (troll/non-troll)
-rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
-## removing self-ties
-rts.g <-simplify(rts.g, remove.loops = T, remove.multiple = F)
+```{r, inlcude=F}
+## exporting the rts.g graph object as a graphml file 
+write.graph(rts.g, file="troll_network.graphml", format="graphml")
 ```
 
+
+
+
+#################################################
+#################################################
+From here on, other plots etc. are prepared
+
 ```{r, include=F}
-## removing multiple edges between users
-g <- simplify(rts.g, remove.multiple = T, remove.loops = T)
 ## creating a data frame with weighted and unweighted degree centrality for each profile
-df <- data.frame(name =V(g)$name,
-                 troll= V(g)$troll,indegree=degree(g,mode='in'),
+df <- data.frame(name = V(g)$name,
+                 troll = V(g)$troll,
+                 account_type = V(g)$account_type,
+                 followers = V(g)$followers_count,
+                 indegree=degree(g,mode='in'),
                  indegree_weighted = degree(rts.g, mode ="in"),
-                 outdegree=degree(g,mode='out'),
+                 outdegree = degree(g, mode= 'out'),
                  outdegree_weighted = degree(rts.g, mode = "out"))
-## ranking users by indegree
-rank.indegree <- df %>% select(name, troll, indegree,
-                          indegree_weighted) %>% arrange(-indegree)
 ```
 
 ```{r, inlude=F}
-#ranking users b weigted indegree n users * n retweets
-rank.indegree.w <- df %>% select(name, troll, indegree,
+## ranking users by indegree
+rank.indegree <- df %>% select(name, troll, account_type, indegree,
+                          indegree_weighted) %>% arrange(-indegree)
+## ranking users b weigted indegree n users * n retweets
+rank.indegree.w <- df %>% select(name, troll, account_type, indegree,
                           indegree_weighted) %>% arrange(-indegree_weighted)
 ```
 
@@ -248,13 +253,13 @@ kable(rank.indegree.w[1:10,], caption = "Top 10 profiles ranked by weighted inde
 ```
 
 ```{r, echo=F}
-### subsetting the graph by removing non-trolls
-#selecting nodes to exclude
+## subsetting the graph by removing non-trolls
+## selecting nodes to exclude
 exclude <- V(rts.g)[troll == "non-troll"]
-#excluding the nodes
+## excluding the nodes
 g.troll <- delete.vertices(rts.g, exclude)
 
-### vizualizing the graph
+## vizualizing the graph
 par(bg ="grey10")
 plot.igraph(g.troll,layout= layout.fruchterman.reingold(g.troll),
             edge.color="grey",
@@ -263,10 +268,10 @@ plot.igraph(g.troll,layout= layout.fruchterman.reingold(g.troll),
 ```
 
 ```{r, echo=F}
-#decomposing the graph into components and returning the largest one
+## decomposing the graph into components and returning the largest one
 comp <- decompose(g.troll, mode = c("weak"), max.comps = 1,
                   min.vertices = 1)
-### plotting the graph
+## plotting the graph
 par(bg ="grey10")
 plot.igraph(comp[[1]],layout= layout.fruchterman.reingold(comp[[1]]),
             edge.color="grey",
@@ -274,8 +279,4 @@ plot.igraph(comp[[1]],layout= layout.fruchterman.reingold(comp[[1]]),
             vertex.size = 4, edge.size = 0.005, edge.arrow.size = 0.01)
 ```
 
-```{r, inlcude=F}
-#exporting the rts.g graph object as a graphml file 
-write.graph(rts.g, file="troll_network.graphml", format="graphml")
-```
 
