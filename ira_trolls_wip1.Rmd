@@ -178,9 +178,9 @@ receiver_troll_share <- right_join(trolls_official, rt.receiver.df)
 length(na.omit(receiver_troll_share$troll))/length(receiver_troll_share$troll)
 ## ~0.0056
 
-nodes2 <- replace(nodes2, is.na(nodes2), "non-troll") ## now we have a variable indicating wether a user is a troll
+nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 
-nodes_categorized <- left_join(nodes2, account_type)
+nodes_categorized <- left_join(nodes, account_type)
 
 length(na.omit(nodes_categorized$account_type))
 ## 394 handles are regarded as trolls by the 538 dataset
