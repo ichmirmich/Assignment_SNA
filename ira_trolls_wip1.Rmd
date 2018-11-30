@@ -202,6 +202,62 @@ nodes <- left_join(nodes, followers)
 nodes$account_type <- replace(nodes$account_type, is.na(nodes$account_type), "regular")
 ```
 
+```{r, echo=F}
+length(nodes$account_type[nodes$account_type == "regular"])
+## 36495 handles are regular users according to the 538 dataset
+
+length(nodes$troll[nodes$troll == "non-troll"])
+## 36500
+
+## the lists disagree
+## 16, 171, 177, 257, 264, 271, 283, 293, 297, 309
+
+unique(nodes$account_type)
+## 13 types of accounts
+
+m <- length(nodes$account_type[nodes$account_type == "Right"])
+## 101 trolls are right
+
+a <- length(nodes$account_type[nodes$account_type == "Left"])
+## 110 trolls are left
+
+b <- length(nodes$account_type[nodes$account_type == "Hashtager"])
+## 61 trolls are hashtagers
+
+c <- length(nodes$account_type[nodes$account_type == "news"])
+## 4 trolls
+
+d <- length(nodes$account_type[nodes$account_type == "Russian"])
+## 77 trolls
+
+e <- length(nodes$account_type[nodes$account_type == "German"])
+## 23 trolls
+
+f <- length(nodes$account_type[nodes$account_type == "French"])
+## 5 trolls
+
+g <- length(nodes$account_type[nodes$account_type == "Spanish"])
+## 1 troll
+
+h <- length(nodes$account_type[nodes$account_type == "?"])
+## 1 troll
+
+i <- length(nodes$account_type[nodes$account_type == "local"])
+## 7 trolls
+
+j <- length(nodes$account_type[nodes$account_type == "Ebola "])
+## 2 trolls
+
+k <- length(nodes$account_type[nodes$account_type == "Koch"])
+## 1 troll
+
+l <- length(nodes$account_type[nodes$account_type == "ZAPOROSHIA"])
+## 1 troll
+
+a+b+c+d+e+f+g+h+i+j+k+l+m
+## 394
+```
+
 ```{r, include=F}
 ## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
