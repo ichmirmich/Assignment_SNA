@@ -56,8 +56,9 @@ unique_tweeting_handles_in_NBC_dataset <- select(tweets, user_key) %>% unique()
 
 
 ```{r, include=F}
-## extracting handle variable and account_type variabe and removing duplicates
 ## number of handles for which we have accounty types (right/left/...)
+
+## extracting handle variable and account_type variabe and removing duplicates
 myvars <- c("author", "account_type") 
 account_type <- tweets_538[myvars] %>% unique()
 ## 2843
@@ -70,7 +71,7 @@ account_type <- account_type %>% rename(handle = author)
 account_type$handle <- tolower(account_type$handle)
 tweets <- left_join(tweets, account_type)
 
-## for how many tweeting handles is an account type available?
+## for how many tweeting troll handles is an account type available?
 handles <- select(tweets, handle, account_type) %>% unique()
 length(na.omit(handles$account_type)) ## 443
 443/453
@@ -99,7 +100,7 @@ rt.sender.df <- as.data.frame(rt.sender) %>% unique() %>% rename(handle = rt.sen
 ## average of ~443 per troll (but distribution is probably highly skewed)
 
 453-333
-## 120 trolls only tweeted and did not retweet
+## 120 trolls only tweeted and did not retweet (but could be retweeted)
 
 ## extracting handle names for the recievers (those who are being retweeted)
 rt.receiver<- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
@@ -141,6 +142,7 @@ handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handl
 ```{r, include=F}
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
+trolls_official$handle <- tolower(trolls_official$handle)
 ## 2752 trolls are defined by the list of the US congress
 ## https://democrats-intelligence.house.gov/uploadedfiles/exhibit_b.pdf
 
@@ -150,23 +152,8 @@ handles <- tweets %>% select(handle) %>% unique()
 
 ## merging the complete list of official troll handle names with the handle names in NBC data
 handles_trolls <- rbind(trolls_official, handles) %>% unique() 
-## 3101
-## Shoudld'nt it be 2752, if all handles in "tweets$handle" are officially trolls? 
-## "At the request of NBC News, three sources familiar with Twitter's data systems cross-referenced the list of names released by Congress, excluding any account that Twitter later restored, to create a partial database of tweets that could be recovered from the suspended accounts. The sources asked to remain anonymous to avoid any politicization of their work or being identified as possibly violating Twitter's developer policy." (NBC article)
-
-2752+453 
-## 3205, (if none of our sender handles occured in the list)
-
-3205-3101 
-## 104 of our handles are offical trolls following the list by the US congress
-
-453-104
-## 349 of our troll handles are not officially trolls following the list by the US congress???
-
-###################################
-## Who do we think are really trolls?
-## problem of anonymous sources
-###################################
+## 2752
+## all of the tweeting handles in the NBC data are officially trolls
 ```
 
 ```{r, include=F}
@@ -175,16 +162,21 @@ trolls_official$troll <- "troll" ## assigning all of these users a troll
 
 ## matching trolls with the complete set of handle names in the retweet network
 nodes <- right_join(trolls_official, handles_all)
-
 length(na.omit(nodes$troll)) 
-## there are 88 trolls in the retweet network
-
-############################
-## repeating the above, including the NBC sources' definition of trolls
-handles_trolls$troll <- "troll"
-nodes2 <- right_join(handles_trolls, handles_all)
-length(na.omit(nodes2$troll)) 
 ## there are 389 trolls in the retweet network
+389-333
+## There are 56 trolls who are retweeted, but do not tweet themselves
+
+## share of troll nodes in the data
+length(na.omit(nodes$troll))/length(nodes$troll)
+## ~1.1% of nodes are trolls
+## 100% of nodes with an outdegree > 0 are trolls
+## ~0.6% of nodes with an indegree > 0 are trolls
+
+receiver_troll_share <- right_join(trolls_official, rt.receiver.df)
+## 207 trolls are retweeted
+length(na.omit(receiver_troll_share$troll))/length(receiver_troll_share$troll)
+## ~0.0056
 
 nodes2 <- replace(nodes2, is.na(nodes2), "non-troll") ## now we have a variable indicating wether a user is a troll
 
