@@ -219,7 +219,6 @@ length(na.omit(followers$followers_count))
 
 tweets <- left_join(tweets, followers)
 nodes <- left_join(nodes, followers)
-nodes <- left_join(nodes, tweets_unique_users)
 
 ## turning all NAs for account_type into "regular" for regular user (=non-troll)
 nodes$account_type <- replace(nodes$account_type, is.na(nodes$account_type), "regular")
