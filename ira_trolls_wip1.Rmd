@@ -23,13 +23,8 @@ library(knitr)
 tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
-```{r, include=F}
-## how many tweets?
-print(paste("Read ", length(tweets$text), " tweets.", sep=""))
-```
-
 ```{r, inlcude=F}
-## loading the 538 twitter data for later comparison of account categories
+## loading the 538 twitter data for comparison of account types
 tweets1 <- read.csv("Raw Data/IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
 tweets2 <- read.csv("Raw Data/IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
 tweets3 <- read.csv("Raw Data/IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
@@ -77,6 +72,31 @@ length(na.omit(handles$account_type)) ## 443
 ## roughly 98% available
 ```
 
+```{r}
+length(unique(tweets$user_id))
+## 393
+length(unique(tweets$handle))
+## 453
+
+## Es gibt 393 unique user IDs und 453 unique handles. Da macht es Sinn, zu versuchen die unterschiedlichen handles mit selber ID im datensatz zusammen zulegen, oder?
+
+unique_users <- select(tweets, user_id, handle)
+unique_users <- unique(unique_users)
+
+#summary(tweets_unique_users$user_id)
+
+
+length(na.omit(tweets$user_id))
+## 195,386
+203451 - 195386
+## 8,065 user ids are missing
+
+summary(unique_users$user_id)
+## they are NAs!!!!!!!!!!!!!!!!!!!!!!
+
+summary(tweets$created_str)
+```
+
 ```{r, include=F}
 ## Code by Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
 ## selecting only the retweets
@@ -93,7 +113,7 @@ rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tol
 
 ## how many unique retweet senders?
 rt.sender.df <- as.data.frame(rt.sender) %>% unique() %>% rename(handle = rt.sender)
-## 333 trolls retweeted 147428 times
+## 333 trolls retweeted 147,428 times
 
 147428/333
 ## average of ~443 per troll (but distribution is probably highly skewed)
@@ -180,11 +200,10 @@ length(na.omit(receiver_troll_share$troll))/length(receiver_troll_share$troll)
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 
 nodes <- left_join(nodes, account_type)
+#nodes <- right_join(nodes, unique_users)
 
 length(na.omit(nodes$account_type))
 ## 394 handles are regarded as trolls by the 538 dataset
-
-length(nodes$account_type[account_type=="right"])
 ```
 
 ```{r, include=F}
@@ -194,9 +213,13 @@ followers <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Netw
 followers <- select(followers, screen_name, followers_count)
 followers$screen_name <- tolower(followers$screen_name)
 followers <- followers %>% rename(handle = screen_name)
+length(na.omit(followers$followers_count))
+## 453 - 383
+## there is a followers_count available for 383 trolls (not available for 70)
 
 tweets <- left_join(tweets, followers)
 nodes <- left_join(nodes, followers)
+nodes <- left_join(nodes, tweets_unique_users)
 
 ## turning all NAs for account_type into "regular" for regular user (=non-troll)
 nodes$account_type <- replace(nodes$account_type, is.na(nodes$account_type), "regular")
@@ -236,7 +259,7 @@ e <- length(nodes$account_type[nodes$account_type == "German"])
 f <- length(nodes$account_type[nodes$account_type == "French"])
 ## 5 trolls
 
-g <- length(nodes$account_type[nodes$account_type == "Spanish"])
+n <- length(nodes$account_type[nodes$account_type == "Spanish"])
 ## 1 troll
 
 h <- length(nodes$account_type[nodes$account_type == "?"])
@@ -254,7 +277,7 @@ k <- length(nodes$account_type[nodes$account_type == "Koch"])
 l <- length(nodes$account_type[nodes$account_type == "ZAPOROSHIA"])
 ## 1 troll
 
-a+b+c+d+e+f+g+h+i+j+k+l+m
+a+b+c+d+e+f+h+i+j+k+l+m+n
 ## 394
 ```
 
@@ -269,8 +292,15 @@ g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
 ```{r, inlcude=F}
 ## exporting the rts.g graph object as a graphml file 
-write.graph(rts.g, file="troll_network.graphml", format="graphml")
+write.graph(g, file="troll_network.graphml", format="graphml")
 ```
+
+questions: 
+*other dataset than in synposis
+*community detection algorithm cross-validation feasible
+*including other tables/plots expectations?
+
+
 
 
 
