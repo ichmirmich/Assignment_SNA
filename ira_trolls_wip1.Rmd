@@ -203,6 +203,7 @@ nodes <- left_join(nodes, account_type)
 #nodes <- right_join(nodes, unique_users)
 
 length(na.omit(nodes$account_type))
+389-333
 ## 394 handles are regarded as trolls by the 538 dataset
 ```
 

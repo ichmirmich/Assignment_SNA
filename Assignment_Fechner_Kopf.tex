@@ -116,6 +116,12 @@
 
 \section{Methodology/Operationalisation/Research design}
 
+\subsection{Data}
+
+In early 2018, NBC news published a dataset of 203,451 Tweets by 453 troll accounts between July 2014 and September 2017, which were linked to the Russian IRA by an official document handed over to US Congress by Twitter. This paper uses a Social Network Analysis approach to investigate the behaviour of these Russian troll accounts, which is why only relational data will be taken into account for our analysis. 
+Retweets contain relational information about one user retweeting another, therefore creating a directional tie between the two. First, we drop all of the Tweets in the dataset that are not retweets, which leaves us with 147,428 Retweets by 333 troll accounts. Each of these Retweets represents a tie between two users and an edge in our graph, as will be shown later. We define a Retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the Retweet receiver. 
+Our dataset revolves around a set of 333 unique troll Twitter handles, who are retweeting others. A Twitter handle is the screen name of a Twitter account and can be changed by the users. A variable stating the unique User ID is used to validate unique users, showing that there are no duplicate User IDs in the dataset. There is information about who these 333 accounts retweeted, but not by whom they were retweeted. Of these 333 trolls, 151 (around 45%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (around 55%) trolls only retweeted others, but were not retweeted themselves, making them only senders. A third group of 56 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 389. These 56 trolls were retweeted by others, but did not send retweets themselves. Overall, there are 36,889 unique twitter users in the dataset, 389 classified trolls and 36,500 non-trolls.
+
 \section{Methods}
 
 \section{Discussion}
