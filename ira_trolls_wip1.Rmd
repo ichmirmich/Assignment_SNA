@@ -42,37 +42,33 @@ tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweet
 ```
 
 ```{r, include=F}
-## number of unique handles in the NBC dataset, who (re-)tweet themselves
-unique_tweeting_handles_in_NBC_dataset <- select(tweets, user_key) %>% unique()
-## 453 (all of them trolls, following NBC article)
-## ego-centered network of those 453 troll accounts
-```
-
-
-```{r, include=F}
 ## number of handles for which we have accounty types (right/left/...)
 
 ## extracting handle variable and account_type variabe and removing duplicates
-myvars <- c("author", "account_type") 
-account_type <- tweets_538[myvars] %>% unique()
+myvars <- c("author", "account_category") 
+account_category <- tweets_538[myvars] %>% unique()
 ## 2843
+
+unique(tweets_538$account_category)
 
 ## making variable name identical
 tweets <- tweets %>% rename(handle = user_key)
-account_type <- account_type %>% rename(handle = author)
+account_category <- account_category %>% rename(handle = author)
 
 ## adding account_type variable to the NBC dataset
-account_type$handle <- tolower(account_type$handle)
-tweets <- left_join(tweets, account_type)
+account_category$handle <- tolower(account_category$handle)
+tweets <- left_join(tweets, account_category)
 
 ## for how many tweeting troll handles is an account type available?
-handles <- select(tweets, handle, account_type) %>% unique()
-length(na.omit(handles$account_type)) ## 443
+handles <- select(tweets, handle, account_category) %>% unique()
+length(na.omit(handles$account_category)) ## 443
 443/453
 ## roughly 98% available
 ```
 
 ```{r}
+
+## understanding user ids, will be tidied up later
 length(unique(tweets$user_id))
 ## 393
 length(unique(tweets$handle))
@@ -161,50 +157,58 @@ handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handl
 ```{r, include=F}
 ## importing handle names from the official list release in congress
 trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt", stringsAsFactors = F)
+
 trolls_official$handle <- tolower(trolls_official$handle)
-## 2752 trolls are defined by the list of the US congress
-## https://democrats-intelligence.house.gov/uploadedfiles/exhibit_b.pdf
+
+## importing handle newer handle names
+trolls_official_new <- read.delim("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/538/Github for 538/Assignment_SNA/Raw Data/ira_handles.txt", sep="")
+
+trolls_official_new$handle <- tolower(trolls_official_new$handle)
+## 3841
+
+trolls <- rbind(trolls_official, trolls_official_new) %>% unique()
+## together 3848 (+7 from old list)
 
 ## all troll handles in NBC dataset
 handles <- tweets %>% select(handle) %>% unique() 
 ## 453
 
 ## merging the complete list of official troll handle names with the handle names in NBC data
-handles_trolls <- rbind(trolls_official, handles) %>% unique() 
-## 2752
+handles_trolls <- rbind(trolls_official, trolls_official_new, handles) %>% unique() 
+
+## 3848
 ## all of the tweeting handles in the NBC data are officially trolls
 ```
 
 ```{r, include=F}
 ## how many trolls are in the overall dataset, either as senders or receivers?
 trolls_official$troll <- "troll" ## assigning all of these users a troll
+trolls$troll <- "troll"
 
 ## matching trolls with the complete set of handle names in the retweet network
-nodes <- right_join(trolls_official, handles_all)
+nodes <- right_join(trolls, handles_all)
 length(na.omit(nodes$troll)) 
-## there are 389 trolls in the retweet network
-389-333
-## There are 56 trolls who are retweeted, but do not tweet themselves
+## there are 404 trolls in the retweet network
+404-333
+## There are 71 trolls who are retweeted, but do not tweet themselves
 
-## share of troll nodes in the data
-length(na.omit(nodes$troll))/length(nodes$troll)
-## ~1.1% of nodes are trolls
-## 100% of nodes with an outdegree > 0 are trolls
-## ~0.6% of nodes with an indegree > 0 are trolls
-
-receiver_troll_share <- right_join(trolls_official, rt.receiver.df)
+#receiver_troll_share <- right_join(trolls, rt.receiver.df)
 ## 207 trolls are retweeted
-length(na.omit(receiver_troll_share$troll))/length(receiver_troll_share$troll)
+#length(na.omit(receiver_troll_share$troll))
 ## ~0.0056
 
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 
-nodes <- left_join(nodes, account_type)
+nodes <- left_join(nodes, account_category)
 #nodes <- right_join(nodes, unique_users)
 
-length(na.omit(nodes$account_type))
-389-333
-## 394 handles are regarded as trolls by the 538 dataset
+troll_nodes <- filter(nodes, nodes$troll == "troll")
+length(na.omit(troll_nodes$account_category))
+## 379 handles are regarded as trolls by the 538 dataset
+## 389 handles are regarded as trolls by the NBC dataset
+## 10 'trolls' don't have a category
+394/404
+## 98% category available
 ```
 
 ```{r, include=F}
@@ -222,63 +226,17 @@ tweets <- left_join(tweets, followers)
 nodes <- left_join(nodes, followers)
 
 ## turning all NAs for account_type into "regular" for regular user (=non-troll)
-nodes$account_type <- replace(nodes$account_type, is.na(nodes$account_type), "regular")
-```
+troll_nodes$account_category <- replace(troll_nodes$account_category, is.na(troll_nodes$account_category), "Unknown")
 
-```{r, echo=F}
-length(nodes$account_type[nodes$account_type == "regular"])
-## 36495 handles are regular users according to the 538 dataset
 
-length(nodes$troll[nodes$troll == "non-troll"])
-## 36500
+nodes <- left_join(nodes, troll_nodes, by ="handle")
 
-## the lists disagree
-## 16, 171, 177, 257, 264, 271, 283, 293, 297, 309
+nodes$account_category.y <- replace(nodes$account_category.y, is.na(nodes$account_category.y), "Non-Troll")
+nodes$troll.y <- replace(nodes$troll.y, is.na(nodes$troll.y), "non-troll")
 
-unique(nodes$account_type)
-## 13 types of accounts
+nodes <- select(nodes, handle, troll.y, account_category.y, followers_count) %>% rename(account_category = account_category.y)
+nodes <- nodes %>% rename(troll = troll.y)
 
-m <- length(nodes$account_type[nodes$account_type == "Right"])
-## 101 trolls are right
-
-a <- length(nodes$account_type[nodes$account_type == "Left"])
-## 110 trolls are left
-
-b <- length(nodes$account_type[nodes$account_type == "Hashtager"])
-## 61 trolls are hashtagers
-
-c <- length(nodes$account_type[nodes$account_type == "news"])
-## 4 trolls
-
-d <- length(nodes$account_type[nodes$account_type == "Russian"])
-## 77 trolls
-
-e <- length(nodes$account_type[nodes$account_type == "German"])
-## 23 trolls
-
-f <- length(nodes$account_type[nodes$account_type == "French"])
-## 5 trolls
-
-n <- length(nodes$account_type[nodes$account_type == "Spanish"])
-## 1 troll
-
-h <- length(nodes$account_type[nodes$account_type == "?"])
-## 1 troll
-
-i <- length(nodes$account_type[nodes$account_type == "local"])
-## 7 trolls
-
-j <- length(nodes$account_type[nodes$account_type == "Ebola "])
-## 2 trolls
-
-k <- length(nodes$account_type[nodes$account_type == "Koch"])
-## 1 troll
-
-l <- length(nodes$account_type[nodes$account_type == "ZAPOROSHIA"])
-## 1 troll
-
-a+b+c+d+e+f+h+i+j+k+l+m+n
-## 394
 ```
 
 ```{r, include=F}
@@ -288,6 +246,13 @@ rts.df <- data.frame(rt.sender, rt.receiver)
 rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
+```
+
+```{r, include=F}
+### computing graph coreness
+V(g)$Kcore = graph.coreness(g)
+#computing degree
+V(g)$degree <- degree(g)
 ```
 
 ```{r, inlcude=F}
@@ -309,11 +274,23 @@ questions:
 #################################################
 From here on, other plots etc. are prepared
 
+```{r}
+## breaks session
+plot(g,
+     main="K Cores",
+     vertex.size = 20,
+     vertex.label = V(g)$Kcore,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = "white")
+```
+
+
 ```{r, include=F}
 ## creating a data frame with weighted and unweighted degree centrality for each profile
 df <- data.frame(name = V(g)$name,
                  troll = V(g)$troll,
-                 account_type = V(g)$account_type,
+                 account_category = V(g)$account_category,
                  followers = V(g)$followers_count,
                  indegree=degree(g,mode='in'),
                  indegree_weighted = degree(rts.g, mode ="in"),
@@ -323,10 +300,10 @@ df <- data.frame(name = V(g)$name,
 
 ```{r, inlude=F}
 ## ranking users by indegree
-rank.indegree <- df %>% select(name, troll, account_type, indegree,
+rank.indegree <- df %>% select(name, troll, account_category, indegree,
                           indegree_weighted) %>% arrange(-indegree)
 ## ranking users b weigted indegree n users * n retweets
-rank.indegree.w <- df %>% select(name, troll, account_type, indegree,
+rank.indegree.w <- df %>% select(name, troll, account_category, indegree,
                           indegree_weighted) %>% arrange(-indegree_weighted)
 ```
 
