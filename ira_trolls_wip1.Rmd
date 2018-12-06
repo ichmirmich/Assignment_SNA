@@ -248,7 +248,7 @@ rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
-## creating an undirected graph
+## creating an undirected graph object
 rts.g.undirected <- graph.data.frame(rts.df, directed=F, vertices = nodes)
 g_undirected <- simplify(rts.g.undirected, remove.loops = T, remove.multiple = T)
 ```
@@ -265,19 +265,66 @@ V(g)$degree <- degree(g)
 write.graph(g, file="troll_network.graphml", format="graphml")
 ```
 
-questions: 
-*other dataset than in synposis
-*community detection algorithm cross-validation feasible
-*including other tables/plots expectations?
 
 
+################################################
 
-```{r, echo=F}
-imc <-cluster_infomap(g_undirected, e.weights = NULL, v.weights = NULL, nb.trials = 10,
-  modularity = TRUE)
-membership(imc)
-communities(imc)
+
+```{r}
+## communities, from session 12 on communities
+
+# running infomap community detection
+infomap<- cluster_infomap(g, nb.trials = 10,
+                          modularity = F)
+
+# running modularity optimization community detection
+modularity <- cluster_louvain(g)
+
+## running Girvan and Newman's degree-based community detection
+deg_com <- cluster_edge_betweenness(g)
 ```
+
+weiterer code aus Yevgeniys script rauskopiert
+
+```{r}
+## Vizualising communites based on infomap algorithm
+plot(g,
+     vertex.size = 20,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = infomap$membership)
+
+## Vizualising communities based on modularity optimization algorithm
+plot(g,
+     vertex.size = 20,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = modularity$membership)
+
+## Vizualising communites based on Girvan and Newman's degree-based community detection
+plot(g,
+     vertex.size = 20,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = deg_com$membership)
+
+### what if you want to store the output from the algoritm above in the graph object before exporting? Use the code bellow
+V(g)$community <- deg_com$membership
+
+df.community <- data.frame(name = V(g)$name, community = V(g)$community)
+head(df.community)
+## this can be appended to our nodes dataframe (with right.join/left.join)
+
+### example:
+plot(g,
+     vertex.size = 20,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = V(g)$yourvariablename)
+
+```
+
+
 
 
 
