@@ -38,12 +38,12 @@ tweets10 <- read.csv("Raw Data/IRAhandle_tweets_10.csv", stringsAsFactors = F, s
 tweets11 <- read.csv("Raw Data/IRAhandle_tweets_11.csv", stringsAsFactors = F, sep = ",")
 tweets12 <- read.csv("Raw Data/IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
 tweets13 <- read.csv("Raw Data/IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
-tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13)
+tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13) ## merging into one dataset
+rm(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13) ## removing for better oversight
 ```
 
 ```{r, include=F}
 ## number of handles for which we have accounty types (right/left/...)
-
 ## extracting handle variable and account_type variabe and removing duplicates
 myvars <- c("author", "account_category") 
 account_category <- tweets_538[myvars] %>% unique()
@@ -67,7 +67,6 @@ length(na.omit(handles$account_category)) ## 443
 ```
 
 ```{r}
-
 ## understanding user ids, will be tidied up later
 length(unique(tweets$user_id))
 ## 393
@@ -242,10 +241,16 @@ nodes <- nodes %>% rename(troll = troll.y)
 ```{r, include=F}
 ## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
+
 ## creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
 rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
+
+## creating an undirected graph
+rts.g.undirected <- graph.data.frame(rts.df, directed=F, vertices = nodes)
+g_undirected <- simplify(rts.g.undirected, remove.loops = T, remove.multiple = T)
 ```
 
 ```{r, include=F}
@@ -267,6 +272,12 @@ questions:
 
 
 
+```{r, echo=F}
+imc <-cluster_infomap(g_undirected, e.weights = NULL, v.weights = NULL, nb.trials = 10,
+  modularity = TRUE)
+membership(imc)
+communities(imc)
+```
 
 
 
