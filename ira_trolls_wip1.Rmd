@@ -39,7 +39,7 @@ tweets11 <- read.csv("Raw Data/IRAhandle_tweets_11.csv", stringsAsFactors = F, s
 tweets12 <- read.csv("Raw Data/IRAhandle_tweets_12.csv", stringsAsFactors = F, sep = ",")
 tweets13 <- read.csv("Raw Data/IRAhandle_tweets_13.csv", stringsAsFactors = F, sep = ",")
 tweets_538 <- rbind(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13) ## merging into one dataset
-rm(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13) ## removing for better oversight
+rm(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, tweets9,tweets10, tweets11, tweets12, tweets13) ## removing for better oversight in environment
 ```
 
 ```{r, include=F}
@@ -208,6 +208,7 @@ length(na.omit(troll_nodes$account_category))
 ## 10 'trolls' don't have a category
 394/404
 ## 98% category available
+length(nodes$troll[nodes$troll=="non-troll"])
 ```
 
 ```{r, include=F}
@@ -324,6 +325,29 @@ plot(g,
 
 ```
 
+
+
+```{r, include=F}
+## creating summary statistics
+library(xtable)
+
+User <- c("Troll", "Non-Troll", "Total")
+N <- c("404", "36,485", "36,889")
+Senders <- c("182", "0", "333")
+Receivers <- c("222", "36,485", "36,707")
+
+table1 <- cbind(User, N, Senders, Receivers)
+
+
+xtable(table1)
+
+##unnecessary?
+#kable(xtable1, col.names=colnames)
+#?kable()
+
+#xtable(table1, caption = "Summary of Users", label = NULL, align = T, digits = NULL,
+#       display = NULL, auto = FALSE)
+```
 
 
 
