@@ -295,6 +295,15 @@ df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularit
 head(df.community)
 
 nodes <- left_join(nodes, df.community, by = "handle")
+## re-creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count, infomap, modularity
+rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+
+## removing self-ties and multiple edges between users
+g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
+
+## creating an undirected graph object
+g.undir <- as.undirected(g, mode = "collapse")
+
 ## this can be appended to our nodes dataframe (with right.join/left.join)
 ```
 
