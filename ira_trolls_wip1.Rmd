@@ -227,7 +227,7 @@ nodes <- left_join(nodes, followers)
 
 ## turning all NAs for account_type into "regular" for regular user (=non-troll)
 troll_nodes$account_category <- replace(troll_nodes$account_category, is.na(troll_nodes$account_category), "Unknown")
-
+troll_nodes <- left_join(troll_nodes, followers)
 
 nodes <- left_join(nodes, troll_nodes, by ="handle")
 
@@ -330,17 +330,23 @@ plot(g,
 ```{r, include=F}
 ## creating summary statistics
 library(xtable)
+library(stargazer)
+
 
 User <- c("Troll", "Non-Troll", "Total")
 N <- c("404", "36,485", "36,889")
-Senders <- c("182", "0", "333")
+Senders <- c("333", "0", "333")
 Receivers <- c("222", "36,485", "36,707")
 
 table1 <- cbind(User, N, Senders, Receivers)
 
 
 xtable(table1)
+stargazer(table1, summary=F)
 
+
+
+print(xtable1, include.rownames = F)
 ##unnecessary?
 #kable(xtable1, col.names=colnames)
 #?kable()
@@ -349,6 +355,19 @@ xtable(table1)
 #       display = NULL, auto = FALSE)
 ```
 
+```{r, include=F}
+## creating summary stats for trolls only
+
+Category <- c("Right", "Left", "Hashtag Gamer", "Non-English", "Newsfeed", "Commercial", "Fearmonger", "Unknown", "Total")
+N <- c(length(troll_nodes$account_category[troll_nodes$account_category=="RightTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="LeftTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="HashtagGamer"]), length(troll_nodes$account_category[troll_nodes$account_category=="NonEnglish"]),
+       length(troll_nodes$account_category[troll_nodes$account_category=="NewsFeed"]),
+       length(troll_nodes$account_category[troll_nodes$account_category=="Unknown"]), "404"
+       )
+Senders <- c()
+
+table2 <- cbind(Category, N, , )
+
+```
 
 
 
