@@ -258,6 +258,7 @@ g.undir <- as.undirected(g, mode = "collapse")
 exclude <- V(rts.g)[troll == "non-troll"]
 ## excluding the nodes
 g.troll <- delete.vertices(rts.g, exclude)
+
 ## creating an undirected subgraph
 g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
@@ -273,18 +274,28 @@ V(g)$degree <- degree(g)
 ## Community detection
 
 # running infomap community detection
-infomap <- cluster_infomap(g, nb.trials = 10,
+infomap <- cluster_infomap(g, nb.trials = 50,
                           modularity = F)
 
 #running infomap on the troll subgraph
-infomap <- cluster_infomap(g.troll, nb.trials = 10,
+infomap.troll <- cluster_infomap(g.troll, nb.trials = 10,
                           modularity = F)
 
 # running modularity optimization community detection
-modularity <- cluster_louvain(g_undirected)
+modularity <- cluster_louvain(g.undir)
 
 #running modularity on the troll subgraph
-modularity <- cluster_louvain(g_undirected)
+modularity.troll <- cluster_louvain(g.troll.undir)
+
+##attatching the communities to the data frames
+V(g)$modularity <- modularity$membership
+V(g)$infomap <- infomap$membership
+
+df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
+head(df.community)
+
+nodes <- left_join(nodes, df.community, by = "handle")
+## this can be appended to our nodes dataframe (with right.join/left.join)
 ```
 
 ```{r, inlcude=F}
@@ -297,11 +308,11 @@ weiterer code aus Yevgeniys script rauskopiert
 
 ```{r}
 ## Vizualising communites based on infomap algorithm
-plot(g,
-     vertex.size = 20,
+plot(g.troll,
+     vertex.size = 2,
      vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = infomap$membership)
+     vertex.label.cex = .1,
+     vertex.color = infomap.troll$membership)
 
 ## Vizualising communities based on modularity optimization algorithm
 plot(g,
@@ -317,12 +328,7 @@ plot(g,
      vertex.label.cex = 1,
      vertex.color = deg_com$membership)
 
-### what if you want to store the output from the algoritm above in the graph object before exporting? Use the code bellow
-V(g)$community <- deg_com$membership
 
-df.community <- data.frame(name = V(g)$name, community = V(g)$community)
-head(df.community)
-## this can be appended to our nodes dataframe (with right.join/left.join)
 
 ### example:
 plot(g,
