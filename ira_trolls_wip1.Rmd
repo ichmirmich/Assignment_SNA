@@ -20,7 +20,7 @@ library(knitr)
 
 ```{r, include=F}
 ## loading the data and setting working directory
-tweets <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/tweets.csv", stringsAsFactors = F, sep = ",")
+tweets <- read.csv("Raw Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
 ```{r, inlcude=F}
@@ -61,13 +61,12 @@ tweets <- left_join(tweets, account_category)
 
 ## for how many tweeting troll handles is an account type available?
 handles <- select(tweets, handle, account_category) %>% unique()
-length(na.omit(handles$account_category)) ## 443
-443/453
+length(na.omit(handles$account_category)) / length(handles$handle)
 ## roughly 98% available
 ```
 
 ```{r}
-## understanding user ids, will be tidied up later
+## understanding user ids, WILL BE TIDIED UP
 length(unique(tweets$user_id))
 ## 393
 length(unique(tweets$handle))
@@ -160,7 +159,7 @@ trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt
 trolls_official$handle <- tolower(trolls_official$handle)
 
 ## importing handle newer handle names
-trolls_official_new <- read.delim("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/538/Github for 538/Assignment_SNA/Raw Data/ira_handles.txt", sep="")
+trolls_official_new <- read.delim("Raw Data/ira_handles.txt", sep="")
 
 trolls_official_new$handle <- tolower(trolls_official_new$handle)
 ## 3841
@@ -213,7 +212,7 @@ length(nodes$troll[nodes$troll=="non-troll"])
 
 ```{r, include=F}
 ## loading the additional user data to extract followers count
-followers <- read.csv("C:/Google Drive/Universität/Master/Kopenhagen/Social Network Analysis/Troll-Data/users.csv", stringsAsFactors = F, sep = ",")
+followers <- read.csv("Raw Data/users.csv", stringsAsFactors = F, sep = ",")
 
 followers <- select(followers, screen_name, followers_count)
 followers$screen_name <- tolower(followers$screen_name)
@@ -225,7 +224,7 @@ length(na.omit(followers$followers_count))
 tweets <- left_join(tweets, followers)
 nodes <- left_join(nodes, followers)
 
-## turning all NAs for account_type into "regular" for regular user (=non-troll)
+## turning all NAs for account_type into "Unknown" for regular user (=non-troll)
 troll_nodes$account_category <- replace(troll_nodes$account_category, is.na(troll_nodes$account_category), "Unknown")
 troll_nodes <- left_join(troll_nodes, followers)
 
@@ -234,12 +233,12 @@ nodes <- left_join(nodes, troll_nodes, by ="handle")
 nodes$account_category.y <- replace(nodes$account_category.y, is.na(nodes$account_category.y), "Non-Troll")
 nodes$troll.y <- replace(nodes$troll.y, is.na(nodes$troll.y), "non-troll")
 
-nodes <- select(nodes, handle, troll.y, account_category.y, followers_count) %>% rename(account_category = account_category.y)
+nodes <- select(nodes, handle, troll.y, account_category.y, followers_count.y) %>% rename(account_category = account_category.y)
 nodes <- nodes %>% rename(troll = troll.y)
 
 ```
 
-```{r, include=F}
+```{r, include = F}
 ## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
 
@@ -250,15 +249,42 @@ rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
 ## creating an undirected graph object
-rts.g.undirected <- graph.data.frame(rts.df, directed=F, vertices = nodes)
-g_undirected <- simplify(rts.g.undirected, remove.loops = T, remove.multiple = T)
+g.undir <- as.undirected(g, mode = "collapse")
 ```
 
-```{r, include=F}
+```{r, include = F}
+## subsetting the graph by removing non-trolls
+## selecting nodes to exclude
+exclude <- V(rts.g)[troll == "non-troll"]
+## excluding the nodes
+g.troll <- delete.vertices(rts.g, exclude)
+## creating an undirected subgraph
+g.troll.undir <- as.undirected(g.troll, mode = "collapse")
+```
+
+```{r, include = F}
 ### computing graph coreness
 V(g)$Kcore = graph.coreness(g)
 #computing degree
 V(g)$degree <- degree(g)
+```
+
+```{r}
+## Community detection
+
+# running infomap community detection
+infomap <- cluster_infomap(g, nb.trials = 10,
+                          modularity = F)
+
+#running infomap on the troll subgraph
+infomap <- cluster_infomap(g.troll, nb.trials = 10,
+                          modularity = F)
+
+# running modularity optimization community detection
+modularity <- cluster_louvain(g_undirected)
+
+#running modularity on the troll subgraph
+modularity <- cluster_louvain(g_undirected)
 ```
 
 ```{r, inlcude=F}
@@ -266,24 +292,6 @@ V(g)$degree <- degree(g)
 write.graph(g, file="troll_network.graphml", format="graphml")
 ```
 
-
-
-################################################
-
-
-```{r}
-## communities, from session 12 on communities
-
-# running infomap community detection
-infomap<- cluster_infomap(g, nb.trials = 10,
-                          modularity = F)
-
-# running modularity optimization community detection
-modularity <- cluster_louvain(g)
-
-## running Girvan and Newman's degree-based community detection
-deg_com <- cluster_edge_betweenness(g)
-```
 
 weiterer code aus Yevgeniys script rauskopiert
 
@@ -417,11 +425,7 @@ kable(rank.indegree.w[1:10,], caption = "Top 10 profiles ranked by weighted inde
 ```
 
 ```{r, echo=F}
-## subsetting the graph by removing non-trolls
-## selecting nodes to exclude
-exclude <- V(rts.g)[troll == "non-troll"]
-## excluding the nodes
-g.troll <- delete.vertices(rts.g, exclude)
+
 
 ## vizualizing the graph
 par(bg ="grey10")
