@@ -61,8 +61,14 @@ tweets <- left_join(tweets, account_category)
 
 ## for how many tweeting troll handles is an account type available?
 handles <- select(tweets, handle, account_category) %>% unique()
+<<<<<<< HEAD
 length(na.omit(handles$account_category)) / length(handles$handle)
 ## roughly 98% available
+=======
+length(na.omit(handles$account_category)) ## 443
+443/453
+## around 98% available
+>>>>>>> 76bd9bf454ad934412b93c93e2ecfe80e14ef595
 ```
 
 ```{r}
@@ -352,10 +358,9 @@ plot(g,
 
 ```{r, include=F}
 ## creating summary statistics
-library(xtable)
 library(stargazer)
 
-
+## using numbers from calculations that can be seen in the chapter on data description
 User <- c("Troll", "Non-Troll", "Total")
 N <- c("404", "36,485", "36,889")
 Senders <- c("333", "0", "333")
@@ -363,33 +368,54 @@ Receivers <- c("222", "36,485", "36,707")
 
 table1 <- cbind(User, N, Senders, Receivers)
 
-
-xtable(table1)
-stargazer(table1, summary=F)
-
-
-
-print(xtable1, include.rownames = F)
-##unnecessary?
-#kable(xtable1, col.names=colnames)
-#?kable()
-
-#xtable(table1, caption = "Summary of Users", label = NULL, align = T, digits = NULL,
-#       display = NULL, auto = FALSE)
+stargazer(table1, summary=F, align=T, title="User Statistics")
 ```
 
 ```{r, include=F}
 ## creating summary stats for trolls only
 
-Category <- c("Right", "Left", "Hashtag Gamer", "Non-English", "Newsfeed", "Commercial", "Fearmonger", "Unknown", "Total")
-N <- c(length(troll_nodes$account_category[troll_nodes$account_category=="RightTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="LeftTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="HashtagGamer"]), length(troll_nodes$account_category[troll_nodes$account_category=="NonEnglish"]),
-       length(troll_nodes$account_category[troll_nodes$account_category=="NewsFeed"]),
-       length(troll_nodes$account_category[troll_nodes$account_category=="Unknown"]), "404"
-       )
-Senders <- c()
+## first, vectors are created, which are later used as variables in the table
 
-table2 <- cbind(Category, N, , )
+## Rownames
+Category <- c("Right", "Left", "Hashtag Gamer", "Non-English", "Newsfeed", "Fearmonger", "Unknown", "Total")
 
+## Number of Trolls
+N <- c(length(troll_nodes$account_category[troll_nodes$account_category=="RightTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="LeftTroll"]), length(troll_nodes$account_category[troll_nodes$account_category=="HashtagGamer"]), length(troll_nodes$account_category[troll_nodes$account_category=="NonEnglish"]), length(troll_nodes$account_category[troll_nodes$account_category=="NewsFeed"]), length(troll_nodes$account_category[troll_nodes$account_category=="Fearmonger"]), length(troll_nodes$account_category[troll_nodes$account_category=="Unknown"]), "404")
+
+## Sender Count
+rt.sender.df <- left_join(rt.sender.df, account_category)
+rt.sender.df$account_category <- replace(rt.sender.df$account_category, is.na(rt.sender.df$account_category), "Unknown")
+
+Senders <- c(length(rt.sender.df$account_category[rt.sender.df$account_category=="RightTroll"]), length(rt.sender.df$account_category[rt.sender.df$account_category=="LeftTroll"]),              length(rt.sender.df$account_category[rt.sender.df$account_category=="HashtagGamer"]),
+length(rt.sender.df$account_category[rt.sender.df$account_category=="NonEnglish"]),  length(rt.sender.df$account_category[rt.sender.df$account_category=="NewsFeed"]), length(rt.sender.df$account_category[rt.sender.df$account_category=="Fearmonger"]), length(rt.sender.df$account_category[rt.sender.df$account_category=="Unknown"]), "333")                    
+
+rt.sender.df$sender <- "Sender"
+troll_nodes <- left_join(troll_nodes, rt.sender.df)
+
+## Receiver Count
+rt.receiver.df$receiver <- "Receiver"
+troll_nodes <- left_join(troll_nodes, rt.receiver.df)
+receiver_count <- filter(troll_nodes, troll_nodes$receiver=="Receiver")
+
+Receivers <- c(length(receiver_count$account_category[receiver_count$account_category=="RightTroll"]), length(receiver_count$account_category[receiver_count$account_category=="LeftTroll"]),              length(receiver_count$account_category[receiver_count$account_category=="HashtagGamer"]),
+length(receiver_count$account_category[receiver_count$account_category=="NonEnglish"]),  length(receiver_count$account_category[receiver_count$account_category=="NewsFeed"]), length(receiver_count$account_category[receiver_count$account_category=="Fearmonger"]), length(receiver_count$account_category[receiver_count$account_category=="Unknown"]), "222")                                                          
+## Followers
+
+## creating sub-dataframes for each troll group
+right_trolls <- filter(troll_nodes, troll_nodes$account_category=="RightTroll")
+left_trolls <- filter(troll_nodes, troll_nodes$account_category=="LeftTroll")
+hashtager <- filter(troll_nodes, troll_nodes$account_category=="HashtagGamer")
+nonenglish <- filter(troll_nodes, troll_nodes$account_category=="NonEnglish")
+newsfeed <- filter(troll_nodes, troll_nodes$account_category=="NewsFeed")
+fearmonger <- filter(troll_nodes, troll_nodes$account_category=="Fearmonger")
+unknown <- filter(troll_nodes, troll_nodes$account_category=="Unknown")
+
+## calculating the rounded average while omitting NAs
+Average_Followers <- c(round(mean(na.omit(right_trolls$followers_count), digits=0)), round(mean(na.omit(left_trolls$followers_count)), digits=0), round(mean(na.omit(hashtager$followers_count)), digits=0), round(mean(na.omit(nonenglish$followers_count)), digits=0), round(mean(na.omit(newsfeed$followers_count)), digits=0), 0, round(mean(na.omit(unknown$followers_count)), digits=0), 4476)
+
+table2 <- cbind(Category, N, Senders, Receivers, Average_Followers)
+
+stargazer(table2, summary=F, align=T, title="Troll Statistics")
 ```
 
 
