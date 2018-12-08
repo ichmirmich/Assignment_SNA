@@ -61,14 +61,9 @@ tweets <- left_join(tweets, account_category)
 
 ## for how many tweeting troll handles is an account type available?
 handles <- select(tweets, handle, account_category) %>% unique()
-<<<<<<< HEAD
+
 length(na.omit(handles$account_category)) / length(handles$handle)
 ## roughly 98% available
-=======
-length(na.omit(handles$account_category)) ## 443
-443/453
-## around 98% available
->>>>>>> 76bd9bf454ad934412b93c93e2ecfe80e14ef595
 ```
 
 ```{r}
