@@ -254,7 +254,13 @@ g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include = F}
-## subsetting the graph by removing non-trolls
+## subsetting the graph by removing non-trolls NOT WORKING!!!
+
+##removing selve ties
+rts.g <- simplify(rts.g, remove.multiple = F, remove.loops = T)
+
+g.troll <- induced.subgraph(rts.g, which(V(rts.g)$troll == "troll"))
+
 ## selecting nodes to exclude
 exclude <- V(rts.g)[troll == "non-troll"]
 ## excluding the nodes
@@ -275,12 +281,12 @@ V(g)$degree <- degree(g)
 ## Community detection
 
 # running infomap community detection
-infomap <- cluster_infomap(g, nb.trials = 50,
-                          modularity = F)
+infomap <- cluster_infomap(g, nb.trials = 10,
+                          modularity = T)
 
 #running infomap on the troll subgraph
 infomap.troll <- cluster_infomap(g.troll, nb.trials = 10,
-                          modularity = F)
+                          modularity = T)
 
 # running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
@@ -291,8 +297,13 @@ modularity.troll <- cluster_louvain(g.troll.undir)
 ##attatching the communities to the data frames
 V(g)$modularity <- modularity$membership
 V(g)$infomap <- infomap$membership
+V(g)$modularity.troll <- modularity.troll$membership
+V(g)$infomap.troll <- infomap.troll$membership
 
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
+head(df.community)
+
+df.community.troll <- data.frame(handle = V(g)$name, infomap = V(g)$infomap.troll, modularity = V(g)$modularity.troll)
 head(df.community)
 
 nodes <- left_join(nodes, df.community, by = "handle")
@@ -305,7 +316,6 @@ g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
 
-## this can be appended to our nodes dataframe (with right.join/left.join)
 ```
 
 ```{r, inlcude=F}
@@ -321,8 +331,8 @@ weiterer code aus Yevgeniys script rauskopiert
 plot(g.troll,
      vertex.size = 2,
      vertex.label.color = "black",
-     vertex.label.cex = .1,
-     vertex.color = infomap.troll$membership)
+     vertex.label.cex = .1
+     )
 
 ## Vizualising communities based on modularity optimization algorithm
 plot(g,
