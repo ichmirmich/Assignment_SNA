@@ -19,12 +19,12 @@ library(knitr)
 ```
 
 ```{r, include=F}
-## loading the data and setting working directory
+## loading the NBC News dataset and setting working directory
 tweets <- read.csv("Raw Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
 ```{r, inlcude=F}
-## loading the 538 twitter data for comparison of account types
+## loading the 538 twitter dataset for comparison of account types
 tweets1 <- read.csv("Raw Data/IRAhandle_tweets_1.csv", stringsAsFactors = F, sep = ",")
 tweets2 <- read.csv("Raw Data/IRAhandle_tweets_2.csv", stringsAsFactors = F, sep = ",")
 tweets3 <- read.csv("Raw Data/IRAhandle_tweets_3.csv", stringsAsFactors = F, sep = ",")
