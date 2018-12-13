@@ -61,46 +61,20 @@ tweets <- left_join(tweets, account_category)
 
 ## for how many tweeting troll handles is an account type available?
 handles <- select(tweets, handle, account_category) %>% unique()
-
 length(na.omit(handles$account_category)) / length(handles$handle)
-## roughly 98% available
-```
-
-```{r}
-## understanding user ids, WILL BE TIDIED UP
-length(unique(tweets$user_id))
-## 393
-length(unique(tweets$handle))
-## 453
-
-## Es gibt 393 unique user IDs und 453 unique handles. Da macht es Sinn, zu versuchen die unterschiedlichen handles mit selber ID im datensatz zusammen zulegen, oder?
-
-unique_users <- select(tweets, user_id, handle)
-unique_users <- unique(unique_users)
-
-#summary(tweets_unique_users$user_id)
-
-
-length(na.omit(tweets$user_id))
-## 195,386
-203451 - 195386
-## 8,065 user ids are missing
-
-summary(unique_users$user_id)
-## they are NAs!!!!!!!!!!!!!!!!!!!!!!
-
-summary(tweets$created_str)
+## roughly for 98% available
 ```
 
 ```{r, include=F}
 ## Code by Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
+
 ## selecting only the retweets
 rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T, value=T)
 
 ## number of retweets in the dataset
 rts.as.df <- as.data.frame(rts) %>% rename(text = rts)
 ## 147,428
-147428/203451
+rts.as.df / length(tweets$handle)
 ## ~72% of all tweets in the NBC dataset are retweets
 
 ## extracting handle names for the senders (those who retweet)
@@ -110,14 +84,12 @@ rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tol
 rt.sender.df <- as.data.frame(rt.sender) %>% unique() %>% rename(handle = rt.sender)
 ## 333 trolls retweeted 147,428 times
 
-147428/333
-## average of ~443 per troll (but distribution is probably highly skewed)
-
-453-333
+## how many trolls have not retweeted anyone and therefore are not in the network
+length(unique(tweets$handle)) - length(rt.sender.df$handle)
 ## 120 trolls only tweeted and did not retweet (but could be retweeted)
 
 ## extracting handle names for the recievers (those who are being retweeted)
-rt.receiver<- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
+rt.receiver <- tolower(regmatches(rts, regexpr("@(?U).*:", rts)))
 rt.receiver <- (gsub(":", "", rt.receiver)) ## removing ":"
 rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
 
@@ -428,6 +400,32 @@ stargazer(table2, summary=F, align=T, title="Troll Statistics")
 #################################################
 #################################################
 From here on, other plots etc. are prepared
+```{r}
+## understanding user ids, WILL BE TIDIED UP
+length(unique(tweets$user_id))
+## 393
+length(unique(tweets$handle))
+## 453
+
+## Es gibt 393 unique user IDs und 453 unique handles. Da macht es Sinn, zu versuchen die unterschiedlichen handles mit selber ID im datensatz zusammen zulegen, oder?
+
+unique_users <- select(tweets, user_id, handle)
+unique_users <- unique(unique_users)
+
+#summary(tweets_unique_users$user_id)
+
+
+length(na.omit(tweets$user_id))
+## 195,386
+203451 - 195386
+## 8,065 user ids are missing
+
+summary(unique_users$user_id)
+## they are NAs!!!!!!!!!!!!!!!!!!!!!!
+
+summary(tweets$created_str)
+```
+
 
 ```{r}
 ## breaks session
