@@ -254,15 +254,15 @@ g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include = F}
-## subsetting the graph by removing non-trolls NOT WORKING!!!
+## subsetting the graph by removing non-trolls; NOT WORKING!!!
 
-##removing selve ties
-rts.g <- simplify(rts.g, remove.multiple = F, remove.loops = T)
+## removing loops and multiples
+rts.g <- simplify(rts.g, remove.multiple = T, remove.loops = T)
 
-g.troll <- induced.subgraph(rts.g, which(V(rts.g)$troll == "troll"))
+## g.troll <- induced.subgraph(rts.g, which(V(rts.g)$troll == "troll"))
 
 ## selecting nodes to exclude
-exclude <- V(rts.g)[troll == "non-troll"]
+exclude <- V(rts.g)[account_category == "Non-Troll"]
 ## excluding the nodes
 g.troll <- delete.vertices(rts.g, exclude)
 
@@ -270,10 +270,55 @@ g.troll <- delete.vertices(rts.g, exclude)
 g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
+```{r, include=F}
+## GRAPH DENSITY
+
+## whole graph, directed and undirected
+graph.density(g, loops=F)
+## 0.00006
+graph.density(g.undir, loops=F)
+## 0.00012
+
+## subgraph of trolls, directed and undirected
+graph.density(g.troll, loops=F)
+## 0.0076
+graph.density(g.troll.undir, loops=F)
+## 0.0145
+
+## for subgraphs of account type
+
+#### right troll
+## right directed
+exclude <- V(g.troll)[account_category != "RightTroll"]
+g.troll.right <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.right, loops=F)
+## 0.0591
+
+## right undirected
+exclude <- V(g.troll.undir)[account_category != "RightTroll"]
+g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.right.undir, loops=F)
+## 0.1119
+
+#### left troll
+## left directed
+exclude <- V(g.troll)[account_category != "LeftTroll"]
+g.troll.left <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.left, loops=F)
+## 0.0082
+
+## left undirected
+exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
+g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.left.undir, loops=F)
+## 0.0158
+```
+
+
 ```{r, include = F}
-### computing graph coreness
+## computing graph coreness
 V(g)$Kcore = graph.coreness(g)
-#computing degree
+## computing degree
 V(g)$degree <- degree(g)
 ```
 
@@ -430,7 +475,6 @@ stargazer(table2, summary=F, align=T, title="Troll Statistics")
 From here on, other plots etc. are prepared
 
 ```{r}
-## breaks session
 plot(g,
      main="K Cores",
      vertex.size = 20,
@@ -446,9 +490,8 @@ plot(g,
 df <- data.frame(name = V(g)$name,
                  troll = V(g)$troll,
                  account_category = V(g)$account_category,
-                 followers = V(g)$followers_count,
-                 indegree=degree(g,mode='in'),
-                 indegree_weighted = degree(rts.g, mode ="in"),
+                 indegree=degree(g, mode = 'in'),
+                 indegree_weighted = degree(rts.g, mode = "in"),
                  outdegree = degree(g, mode= 'out'),
                  outdegree_weighted = degree(rts.g, mode = "out"))
 ```
@@ -469,6 +512,20 @@ kable(rank.indegree[1:10,], caption = "Top 10 profiles ranked by indegree")
 ```{r, echo=F}
 kable(rank.indegree.w[1:10,], caption = "Top 10 profiles ranked by weighted indegree")
 ```
+
+```{r}
+## ranking users by outdegree
+rank.outdegree <- df %>% select(name, troll, account_category, outdegree,
+                          outdegree_weighted) %>% arrange(-outdegree)
+## ranking users b weigted indegree n users * n retweets
+rank.outdegree.w <- df %>% select(name, troll, account_category, outdegree,
+                          outdegree_weighted) %>% arrange(-outdegree_weighted)
+```
+
+```{r}
+kable(rank.outdegree[1:10,], caption = "Top 10 profiles ranked by outdegree")
+```
+
 
 ```{r, echo=F}
 
