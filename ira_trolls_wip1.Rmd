@@ -16,6 +16,7 @@ library(igraph)
 library(dplyr)
 library(readr)
 library(knitr)
+library(ggplot2)
 ```
 
 ```{r, include=F}
@@ -245,6 +246,8 @@ g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```{r, include=F}
 ## GRAPH DENSITY
 
+## to do: calculate without only retweeted trolls!
+
 ## whole graph, directed and undirected
 graph.density(g, loops=F)
 ## 0.00006
@@ -334,6 +337,98 @@ g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 g.undir <- as.undirected(g, mode = "collapse")
 
 ```
+
+```{r, include=F}
+## COMMUNITY DETECTION ANALYIS
+
+troll_nodes <- left_join(troll_nodes, df.community, by = "handle") ## appending community variables
+
+## PLOT
+
+## reordering of the bars
+positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
+
+## plot
+ggplot(troll_nodes, aes(x=account_category)) +
+  geom_bar(aes(fill = as.character(modularity)), show.legend=F 
+           ) + scale_x_discrete(limits = positions) + 
+  ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
+  xlab("Qualitative Account Categories") +
+  ylab("Number of Trolls") +
+  labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
+
+
+## creating new categories from modularity + Linvill/Warren
+
+troll_nodes$com <- troll_nodes$modularity
+
+troll_nodes$com[troll_nodes$com == 4] <- "Left"
+troll_nodes$com[troll_nodes$com == 10] <- "Right"
+troll_nodes$com[troll_nodes$com == 8] <- "Right"
+troll_nodes$com[troll_nodes$com == 6] <- "Hashtager"
+troll_nodes$com[troll_nodes$com != "Left" & troll_nodes$com != "Right" & troll_nodes$com != "Hashtager"] <- "Other"
+
+## IN NUMBERS
+
+## Right
+right_troll_communities <- filter(nodes, account_category == "RightTroll")
+comms <- unique(right_troll_communities$modularity)
+
+for (com in comms){
+  print(com)
+  print(length(right_troll_communities$modularity[right_troll_communities$modularity==com])/length(right_troll_communities$modularity))
+}
+
+## Left
+left_troll_communities <- filter(nodes, account_category == "LeftTroll")
+comms <- unique(left_troll_communities$modularity)
+
+for (com in comms){
+  print(com)
+  print(length(left_troll_communities$modularity[left_troll_communities$modularity==com])/length(left_troll_communities$modularity))
+}
+
+## Hastager
+hashtag_troll_communities <- filter(nodes, account_category == "HashtagGamer")
+comms <- unique(hashtag_troll_communities$modularity)
+communities <- unique(troll_nodes$modularity)
+
+for (com in comms){
+  print(com)
+  print(length(hashtag_troll_communities$modularity[hashtag_troll_communities$modularity==com])/length(hashtag_troll_communities$modularity))
+}
+
+for (com in comms){
+  print(length(hashtag_troll_communities$modularity[hashtag_troll_communities$modularity==com])/length(hashtag_troll_communities$modularity))
+}
+
+## Non-English
+nonenglish_troll_communities <- filter(nodes, account_category == "NonEnglish")
+comms <- unique(nonenglish_troll_communities$modularity)
+
+for (com in comms){
+  print(length(nonenglish_troll_communities$modularity[nonenglish_troll_communities$modularity==com])/length(nonenglish_troll_communities$modularity))
+}
+
+
+
+## merging the two right communities
+
+## removing all communities below 50
+
+#ggplot(troll_nodes, aes(x=modularity)) +
+  #geom_bar(aes(fill = as.character(account_category)), show.legend=F 
+           #) + 
+  #ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
+  #xlab("Qualitative Account Categories") +
+  #ylab("Number of Trolls") +
+  #labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
+
+
+
+```
+
+
 
 ```{r, inlcude=F}
 ## exporting the rts.g graph object as a graphml file 
