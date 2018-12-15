@@ -345,6 +345,7 @@ troll_nodes <- left_join(troll_nodes, df.community, by = "handle") ## appending 
 
 ## PLOT
 
+
 ## reordering of the bars
 positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
 
@@ -367,8 +368,11 @@ troll_nodes$com[troll_nodes$com == 10] <- "Right"
 troll_nodes$com[troll_nodes$com == 8] <- "Right"
 troll_nodes$com[troll_nodes$com == 6] <- "Hashtager"
 troll_nodes$com[troll_nodes$com != "Left" & troll_nodes$com != "Right" & troll_nodes$com != "Hashtager"] <- "Other"
+```
 
-## IN NUMBERS
+```{r}
+## IN NUMBERS 
+## has to be reworked
 
 ## Right
 right_troll_communities <- filter(nodes, account_category == "RightTroll")
@@ -427,7 +431,6 @@ for (com in comms){
 
 
 ```
-
 
 
 ```{r, inlcude=F}
