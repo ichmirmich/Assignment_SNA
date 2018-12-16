@@ -293,20 +293,22 @@ troll_nodes <- left_join(troll_nodes, df.community, by = "handle") ## appending 
 positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
 
 ## plot
-figure1 <- ggplot(troll_nodes, aes(x=account_category)) +
+png(filename = "figure1.png", width = 700, height = 480)
+ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend=F 
            ) + scale_x_discrete(limits = positions) + 
   ggtitle("Distribution of Communities among Account Categories by Linvill/Warren (2018)") +
-  xlab("Qualitative Account Categories") +
-  ylab("Number of Trolls") +
-  labs(caption = "Note: Color reflects distinct communities using modularity community detection using the Louvain Method.")
-figure1
+    ylab("Number of Trolls") +
+  xlab("")
+dev.off()
+
 ```
 
 ```{r}
 ## ACCOUNT CATEGORIES & COMMUNITIES IN NUMBERS 
 
 ## Right community (Linvill/Warren)
+## gives proportion of communities in account categories
 right_troll_communities <- filter(nodes, account_category == "RightTroll")
 comms <- unique(right_troll_communities$modularity)
 
