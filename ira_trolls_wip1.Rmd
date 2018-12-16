@@ -227,12 +227,10 @@ g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include = F}
-## subsetting the graph by removing non-trolls; NOT WORKING!!!
+## subsetting the graph by removing non-trolls
 
 ## removing loops and multiples
 rts.g <- simplify(rts.g, remove.multiple = T, remove.loops = T)
-
-## g.troll <- induced.subgraph(rts.g, which(V(rts.g)$troll == "troll"))
 
 ## selecting nodes to exclude
 exclude <- V(rts.g)[account_category == "Non-Troll"]
@@ -241,60 +239,6 @@ g.troll <- delete.vertices(rts.g, exclude)
 
 ## creating an undirected subgraph
 g.troll.undir <- as.undirected(g.troll, mode = "collapse")
-```
-
-```{r, include=F}
-## GRAPH DENSITY
-
-## to do: calculate without only retweeted trolls!
-
-## whole graph, directed and undirected
-graph.density(g, loops=F)
-## 0.00006
-graph.density(g.undir, loops=F)
-## 0.00012
-
-## subgraph of trolls, directed and undirected
-graph.density(g.troll, loops=F)
-## 0.0076
-graph.density(g.troll.undir, loops=F)
-## 0.0145
-
-## for subgraphs of account type
-
-#### right troll
-## right directed
-exclude <- V(g.troll)[account_category != "RightTroll"]
-g.troll.right <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.right, loops=F)
-## 0.0591
-
-## right undirected
-exclude <- V(g.troll.undir)[account_category != "RightTroll"]
-g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.right.undir, loops=F)
-## 0.1119
-
-#### left troll
-## left directed
-exclude <- V(g.troll)[account_category != "LeftTroll"]
-g.troll.left <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.left, loops=F)
-## 0.0082
-
-## left undirected
-exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
-g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.left.undir, loops=F)
-## 0.0158
-```
-
-
-```{r, include = F}
-## computing graph coreness
-V(g)$Kcore = graph.coreness(g)
-## computing degree
-V(g)$degree <- degree(g)
 ```
 
 ```{r}
@@ -345,36 +289,24 @@ troll_nodes <- left_join(troll_nodes, df.community, by = "handle") ## appending 
 
 ## PLOT
 
-
 ## reordering of the bars
 positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
 
 ## plot
-ggplot(troll_nodes, aes(x=account_category)) +
+figure1 <- ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend=F 
            ) + scale_x_discrete(limits = positions) + 
-  ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
+  ggtitle("Distribution of Communities among Account Categories by Linvill/Warren (2018)") +
   xlab("Qualitative Account Categories") +
   ylab("Number of Trolls") +
-  labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
-
-
-## creating new categories from modularity + Linvill/Warren
-
-troll_nodes$com <- troll_nodes$modularity
-
-troll_nodes$com[troll_nodes$com == 4] <- "Left"
-troll_nodes$com[troll_nodes$com == 10] <- "Right"
-troll_nodes$com[troll_nodes$com == 8] <- "Right"
-troll_nodes$com[troll_nodes$com == 6] <- "Hashtager"
-troll_nodes$com[troll_nodes$com != "Left" & troll_nodes$com != "Right" & troll_nodes$com != "Hashtager"] <- "Other"
+  labs(caption = "Note: Color reflects distinct communities using modularity community detection using the Louvain Method.")
+figure1
 ```
 
 ```{r}
-## IN NUMBERS 
-## has to be reworked
+## ACCOUNT CATEGORIES & COMMUNITIES IN NUMBERS 
 
-## Right
+## Right community (Linvill/Warren)
 right_troll_communities <- filter(nodes, account_category == "RightTroll")
 comms <- unique(right_troll_communities$modularity)
 
@@ -414,23 +346,170 @@ for (com in comms){
   print(length(nonenglish_troll_communities$modularity[nonenglish_troll_communities$modularity==com])/length(nonenglish_troll_communities$modularity))
 }
 
+## picking the biggest communities of each account category as the representative(s) for this group
+
+## creating new categories from modularity + Linvill/Warren
+
+troll_nodes$com <- troll_nodes$modularity
+
+## numbers are taken from the investigation of biggest communities within account categories that was carried out above
+## all small communities are not examined any further and therefore merged into "Other"
+troll_nodes$com[troll_nodes$com == 4] <- "Left"
+troll_nodes$com[troll_nodes$com == 10] <- "Right"
+troll_nodes$com[troll_nodes$com == 8] <- "Right"
+troll_nodes$com[troll_nodes$com == 6] <- "Hashtager"
+troll_nodes$com[troll_nodes$com != "Left" & troll_nodes$com != "Right" & troll_nodes$com != "Hashtager"] <- "Other"
+
+## PLOT 2 WITH NEW CATEGORIES
+
+positions2 <- c("Right", "Left", "Hashtager", "Other")
+
+ggplot(troll_nodes, aes(x=com)) +
+  geom_bar(aes(fill = as.character(modularity)), show.legend=F 
+           ) + scale_x_discrete(limits = positions2) + 
+  ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
+  xlab("Sythesis of Qualitative and Modularity Algorithm Communities") +
+  ylab("Number of Trolls") +
+  labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
+
+## plot 3 with new categoires
+
+ggplot(troll_nodes, aes(x=com)) +
+  geom_bar(aes(fill = as.character(account_category)), show.legend=T 
+           ) + scale_x_discrete(limits = positions2) + 
+  ggtitle("Distribution of Account Categories among Newly Created Communities") +
+  xlab("Newly Created Categories") +
+  ylab("Number of Trolls") +
+  labs(caption = "Note: Color reflects account categories by Linvill/Warren (2018).")  + theme(legend.title=element_blank())
+
+## appending coms to nodes
+com.df <- select(troll_nodes, handle, com)
+nodes <- left_join(nodes, com.df)
+nodes$com[is.na(nodes$com)] <- "Non-Troll"
 
 
-## merging the two right communities
+## recreating the retweetnetwork to include new communities
+rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 
-## removing all communities below 50
+## removing self-ties and multiple edges between users
+g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
-#ggplot(troll_nodes, aes(x=modularity)) +
-  #geom_bar(aes(fill = as.character(account_category)), show.legend=F 
-           #) + 
-  #ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
-  #xlab("Qualitative Account Categories") +
-  #ylab("Number of Trolls") +
-  #labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
+## creating an undirected graph object
+g.undir <- as.undirected(g, mode = "collapse")
 
+## selecting nodes to exclude
+exclude <- V(rts.g)[com == "Non-Troll"]
+## excluding the nodes
+g.troll <- delete.vertices(rts.g, exclude)
 
-
+## creating an undirected subgraph
+g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
+
+```{r}
+## new right community
+right_troll_communities <- filter(nodes, com == "Right")
+comms <- unique(right_troll_communities$modularity)
+
+for (com in comms){
+  print(com)
+  print(length(right_troll_communities$modularity[right_troll_communities$modularity==com])/length(right_troll_communities$modularity))
+}
+
+## new "other" community
+other_troll_communities <- filter(nodes, com == "Other")
+comms <- unique(other_troll_communities$modularity)
+
+for (com in comms){
+  print(com)
+  print(length(other_troll_communities$modularity[other_troll_communities$modularity==com])/length(other_troll_communities$modularity))
+}
+```
+
+```{r}
+a <- c("grummz", "clickhole")
+neighbors(g, "grummz", mode="in")
+
+degree()
+
+adjacent_vertices(g, a, mode="in")
+degree(g, b, mode="in")
+#a <- as.character(V(g)[name == v])
+
+for (v in V(g)[name]){
+  neighbors(g, v, mode = "in")
+}
+```
+
+
+```{r, include=F}
+## GRAPH DENSITY
+
+## to do: calculate without only retweeted trolls!
+
+## whole graph, directed and undirected
+graph.density(g, loops=F)
+## 0.00006
+graph.density(g.undir, loops=F)
+## 0.00012
+
+## subgraph of trolls, directed and undirected
+graph.density(g.troll, loops=F)
+## 0.029
+graph.density(g.troll.undir, loops=F)
+## 0.03
+
+## for subgraphs of account type
+
+#### right troll
+## right directed
+exclude <- V(g.troll)[com != "Right"]
+g.troll.right <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.right, loops=F)
+## 0.131
+
+## right undirected
+exclude <- V(g.troll.undir)[com != "Right"]
+g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.right.undir, loops=F)
+## 0.145
+
+#### left troll
+## left directed
+exclude <- V(g.troll)[com != "Left"]
+g.troll.left <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.left, loops=F)
+## 0.021
+
+## left undirected
+exclude <- V(g.troll.undir)[com != "Left"]
+g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.left.undir, loops=F)
+## 0.038
+
+#### Hashtager
+## hashtager directed
+exclude <- V(g.troll)[com != "Hashtager"]
+g.troll.hash <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.hash, loops=F)
+## 0.564
+
+## hashtager undirected
+exclude <- V(g.troll.undir)[com != "Hashtager"]
+g.troll.hash.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.hash.undir, loops=F)
+## 0.466 LOWER????
+```
+
+
+```{r, include = F}
+## computing graph coreness
+V(g)$Kcore = graph.coreness(g)
+core.df <- graph.coreness(g) %>% as.data.frame()
+## computing degree
+V(g)$degree <- degree(g)
+```
+
 
 
 ```{r, inlcude=F}
