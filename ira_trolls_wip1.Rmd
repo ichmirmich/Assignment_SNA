@@ -75,14 +75,15 @@ rts <- grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T, value=T)
 ## number of retweets in the dataset
 rts.as.df <- as.data.frame(rts) %>% rename(text = rts)
 ## 147,428
-rts.as.df / length(tweets$handle)
+length(rts.as.df$text) / length(tweets$handle)
 ## ~72% of all tweets in the NBC dataset are retweets
 
 ## extracting handle names for the senders (those who retweet)
-rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl=T)]))
+rt.sender <- tolower(as.character(tweets$handle[grep("^rt @[a-z0-9_]{1,15}", tolower(tweets$text), perl = T)]))
 
 ## how many unique retweet senders?
 rt.sender.df <- as.data.frame(rt.sender) %>% unique() %>% rename(handle = rt.sender)
+length(rt.sender.df$handle)
 ## 333 trolls retweeted 147,428 times
 
 ## how many trolls have not retweeted anyone and therefore are not in the network
@@ -96,6 +97,7 @@ rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
 
 ## how many unique retweet receivers?
 rt.receiver.df <- as.data.frame(rt.receiver) %>% unique() %>% rename(handle = rt.receiver)
+legth(rt.receiver.df$handle)
 ## 36,707 unique handles are being retweeted
 ## calculating the share of trolls later
 
@@ -111,17 +113,19 @@ handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handl
 ## There are 36,889 unique handles in the retweet dataset
 ## There are senders (only trolls) and receivers (trolls and non-trolls) in the unique set of handles.
 
-36889-36707 ## 182
+36889 - legth(rt.receiver.df$handle)
 ## Number of unique handles increases by 182 when adding the senders. Therefore, there are 182 trolls in the data, who sent but did not receive retweets
-182/333
+
+182 / length(rt.sender.df$handle)
 ## ~55% of trolls, who are senders, were not themself retweeted (are no receivers)
 
-333-182
-## There are 151 trolls who retweeted others and were themselves retweeted. They are the only nodes in our data that are both senders and reveivers (that we know of -> unknown edges).
-151/333
+333 - 182
+## There are 151 trolls who retweeted others and were themselves retweeted. They are the only nodes in our data that are both senders and reveivers (that we know of).
+
+151 / length(rt.sender.df$handle)
 ## ~45% of trolls who are senders are also receivers
 
-36707-151
+36707 - 151
 ## 36,556 handles receive a retweet, but do not send a retweet
 ## Next, the share of trolls in these new handles will be calculated.
 ```
@@ -132,7 +136,7 @@ trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt
 
 trolls_official$handle <- tolower(trolls_official$handle)
 
-## importing handle newer handle names
+## importing newer handle names
 trolls_official_new <- read.delim("Raw Data/ira_handles.txt", sep="")
 
 trolls_official_new$handle <- tolower(trolls_official_new$handle)
@@ -161,13 +165,9 @@ trolls$troll <- "troll"
 nodes <- right_join(trolls, handles_all)
 length(na.omit(nodes$troll)) 
 ## there are 404 trolls in the retweet network
+
 404-333
 ## There are 71 trolls who are retweeted, but do not tweet themselves
-
-#receiver_troll_share <- right_join(trolls, rt.receiver.df)
-## 207 trolls are retweeted
-#length(na.omit(receiver_troll_share$troll))
-## ~0.0056
 
 nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
 
@@ -179,9 +179,12 @@ length(na.omit(troll_nodes$account_category))
 ## 379 handles are regarded as trolls by the 538 dataset
 ## 389 handles are regarded as trolls by the NBC dataset
 ## 10 'trolls' don't have a category
+
 394/404
 ## 98% category available
+
 length(nodes$troll[nodes$troll=="non-troll"])
+##36485 non-trolls in the dataset
 ```
 
 ```{r, include=F}
@@ -192,7 +195,6 @@ followers <- select(followers, screen_name, followers_count)
 followers$screen_name <- tolower(followers$screen_name)
 followers <- followers %>% rename(handle = screen_name)
 length(na.omit(followers$followers_count))
-## 453 - 383
 ## there is a followers_count available for 383 trolls (not available for 70)
 
 tweets <- left_join(tweets, followers)
@@ -217,7 +219,7 @@ nodes <- nodes %>% rename(troll = troll.y)
 rts.df <- data.frame(rt.sender, rt.receiver)
 
 ## creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
-rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
 
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
@@ -241,6 +243,60 @@ g.troll <- delete.vertices(rts.g, exclude)
 g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
+```{r, include=F}
+## GRAPH DENSITY
+
+## to do: calculate without only retweeted trolls!
+
+## whole graph, directed and undirected
+graph.density(g, loops = F)
+## 0.00006
+graph.density(g.undir, loops = F)
+## 0.00012
+
+## subgraph of trolls, directed and undirected
+graph.density(g.troll, loops = F)
+## 0.0076
+graph.density(g.troll.undir, loops = F)
+## 0.0145
+
+## for subgraphs of account type
+
+#### right troll
+## right directed
+exclude <- V(g.troll)[account_category != "RightTroll"]
+g.troll.right <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.right, loops = F)
+## 0.0591
+
+## right undirected
+exclude <- V(g.troll.undir)[account_category != "RightTroll"]
+g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.right.undir, loops = F)
+## 0.1119
+
+#### left troll
+## left directed
+exclude <- V(g.troll)[account_category != "LeftTroll"]
+g.troll.left <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.left, loops = F)
+## 0.0082
+
+## left undirected
+exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
+g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.left.undir, loops = F)
+## 0.0158
+```
+
+
+```{r, include = F}
+## computing graph coreness
+V(g)$Kcore = graph.coreness(g)
+## computing degree
+V(g)$degree <- degree(g)
+```
+
 ```{r}
 ## Community detection
 
@@ -248,33 +304,21 @@ g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 infomap <- cluster_infomap(g, nb.trials = 10,
                           modularity = T)
 
-#running infomap on the troll subgraph
-infomap.troll <- cluster_infomap(g.troll, nb.trials = 10,
-                          modularity = T)
-
 # running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
-
-#running modularity on the troll subgraph
-modularity.troll <- cluster_louvain(g.troll.undir)
 
 ##attatching the communities to the data frames
 V(g)$modularity <- modularity$membership
 V(g)$infomap <- infomap$membership
-V(g)$modularity.troll <- modularity.troll$membership
-V(g)$infomap.troll <- infomap.troll$membership
 
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
-head(df.community)
-
-df.community.troll <- data.frame(handle = V(g)$name, infomap = V(g)$infomap.troll, modularity = V(g)$modularity.troll)
-head(df.community)
 
 nodes <- left_join(nodes, df.community, by = "handle")
 ## re-creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count, infomap, modularity
-rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
+rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
 
 ## removing self-ties and multiple edges between users
+rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
 ## creating an undirected graph object
@@ -295,7 +339,7 @@ positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFee
 ## plot
 png(filename = "figure1.png", width = 700, height = 480)
 ggplot(troll_nodes, aes(x=account_category)) +
-  geom_bar(aes(fill = as.character(modularity)), show.legend=F 
+  geom_bar(aes(fill = as.character(modularity)), show.legend = F 
            ) + scale_x_discrete(limits = positions) + 
   ggtitle("Distribution of Communities among Account Categories by Linvill/Warren (2018)") +
     ylab("Number of Trolls") +
