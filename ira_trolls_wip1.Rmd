@@ -1,5 +1,5 @@
 ---
-title: "troll wip1"
+title: "wip1"
 author: "Johannes Kopf"
 date: "24 November 2018"
 output: pdf_document
@@ -17,6 +17,7 @@ library(dplyr)
 library(readr)
 library(knitr)
 library(ggplot2)
+library(stargazer)
 ```
 
 ```{r, include=F}
@@ -49,8 +50,6 @@ rm(tweets1, tweets2, tweets3 , tweets4, tweets5, tweets6, tweets7, tweets8, twee
 myvars <- c("author", "account_category") 
 account_category <- tweets_538[myvars] %>% unique()
 ## 2843
-
-unique(tweets_538$account_category)
 
 ## making variable name identical
 tweets <- tweets %>% rename(handle = user_key)
@@ -102,35 +101,33 @@ rt.receiver.df <- as.data.frame(rt.receiver) %>% unique() %>% rename(handle = rt
 length(rt.receiver.df$handle)
 ## 36,707 unique handles are being retweeted
 ## calculating the share of trolls later
-
-## Registering empty entries as missing
-## i think that the following code is not needed, because there are no empty entries
-## rt.sender[rt.sender==""] <- "<NA>"
-## rt.receiver[rt.receiver==""] <- "<NA>"
 ```
 
 ```{r, include=F}
 ## storing reciever and sender handle names in one dataframe and removing duplicates
 handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handle = "c(rt.sender, rt.receiver)")
 ## There are 36,889 unique handles in the retweet dataset
-## There are senders (only trolls) and receivers (trolls and non-trolls) in the unique set of handles.
+```
 
-36889 - length(rt.receiver.df$handle)
+```{r}
+## FIRST CALCULATIONS FOR DATA DESCRIPTION
+
+length(handles_all$handle) - length(rt.receiver.df$handle) ## 182
 ## Number of unique handles increases by 182 when adding the senders. Therefore, there are 182 trolls in the data, who sent but did not receive retweets
 
-182 / length(rt.sender.df$handle)
-## ~55% of trolls, who are senders, were not themself retweeted (are no receivers)
+(length(handles_all$handle) - length(rt.receiver.df$handle)) / length(rt.sender.df$handle)
+## 55% of trolls, who are senders, were not themself retweeted (are no receivers)
 
-333 - 182
+length(rt.sender.df$handle) - (length(handles_all$handle) - length(rt.receiver.df$handle)) ## 151
 ## There are 151 trolls who retweeted others and were themselves retweeted. They are the only nodes in our data that are both senders and reveivers (that we know of).
 
-151 / length(rt.sender.df$handle)
+(length(rt.sender.df$handle) - (length(handles_all$handle) - length(rt.receiver.df$handle))) / length(rt.sender.df$handle)
 ## ~45% of trolls who are senders are also receivers
 
-36707 - 151
+length(rt.receiver.df$handle) - (length(rt.sender.df$handle) - (length(handles_all$handle) - length(rt.receiver.df$handle)))
 ## 36,556 handles receive a retweet, but do not send a retweet
-## Next, the share of trolls in these new handles will be calculated.
 ```
+
 
 ```{r, include=F}
 ## importing handle names from the official list release in congress
@@ -138,7 +135,7 @@ trolls_official <-  read.csv("http://golovchenko.github.io/data/trollhandles.txt
 
 trolls_official$handle <- tolower(trolls_official$handle)
 
-## importing newer handle names
+## importing second (newer) list of handle names
 trolls_official_new <- read.delim("Raw Data/ira_handles.txt", sep="")
 
 trolls_official_new$handle <- tolower(trolls_official_new$handle)
@@ -153,13 +150,12 @@ handles <- tweets %>% select(handle) %>% unique()
 
 ## merging the complete list of official troll handle names with the handle names in NBC data
 handles_trolls <- rbind(trolls_official, trolls_official_new, handles) %>% unique() 
-
 ## 3848
 ## all of the tweeting handles in the NBC data are officially trolls
 ```
 
 ```{r, include=F}
-###Merging the older NBC list of trolls, with the newer Linvill/Warren; adding "troll" and "non-troll" labels as attributes###
+### Merging the older NBC list of trolls, with the newer Linvill/Warren; adding "troll" and "non-troll" labels as attributes###
 
 ## how many trolls are in the overall dataset, either as senders or receivers?
 trolls_official$troll <- "troll" ## assigning all of these users a troll
@@ -170,13 +166,12 @@ nodes <- right_join(trolls, handles_all)
 length(na.omit(nodes$troll)) 
 ## there are 404 trolls in the retweet network
 
-404-333
+length(na.omit(nodes$troll))-length(rt.sender.df$handle)
 ## There are 71 trolls who are retweeted, but do not tweet themselves
 
-nodes <- replace(nodes, is.na(nodes), "non-troll") ## now we have a variable indicating wether a user is a troll
-
+nodes <- replace(nodes, is.na(nodes), "non-troll") 
+## now we have a variable indicating wether a user is a troll
 nodes <- left_join(nodes, account_category)
-#nodes <- right_join(nodes, unique_users)
 
 troll_nodes <- filter(nodes, nodes$troll == "troll")
 length(na.omit(troll_nodes$account_category))
@@ -184,7 +179,7 @@ length(na.omit(troll_nodes$account_category))
 ## 389 handles are regarded as trolls by the NBC dataset
 ## 10 'trolls' don't have a category
 
-394/404
+length(na.omit(troll_nodes$account_category))/length(troll_nodes$handle)
 ## 98% category available
 
 length(nodes$troll[nodes$troll=="non-troll"])
@@ -192,7 +187,7 @@ length(nodes$troll[nodes$troll=="non-troll"])
 ```
 
 ```{r, include=F}
-###Adding follower count as node attribute###
+### Adding follower count as node attribute ###
 
 ## loading the additional user data to extract followers count
 followers <- read.csv("Raw Data/users.csv", stringsAsFactors = F, sep = ",")
@@ -210,38 +205,36 @@ nodes <- left_join(nodes, followers)
 troll_nodes$account_category <- replace(troll_nodes$account_category, is.na(troll_nodes$account_category), "Unknown")
 troll_nodes <- left_join(troll_nodes, followers)
 
+## cleaning up the node dataframe
 nodes <- left_join(nodes, troll_nodes, by ="handle")
-
 nodes$account_category.y <- replace(nodes$account_category.y, is.na(nodes$account_category.y), "Non-Troll")
 nodes$troll.y <- replace(nodes$troll.y, is.na(nodes$troll.y), "non-troll")
-
 nodes <- select(nodes, handle, troll.y, account_category.y, followers_count.y) %>% rename(account_category = account_category.y)
 nodes <- nodes %>% rename(troll = troll.y)
-
 ```
 
 ```{r, include = F}
-###Creating the graph###
+### Creating the graph ### (1)
 
 ## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
 
-## creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
+## creating the retweet network based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
 rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
 rts.g <- simplify(rts.g, remove.multiple = T)
 
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
+## only removing self ties
+rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
+
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include = F}
-###Subsetting the graph by removing non-trolls###
-
-## removing loops and multiples
-rts.g <- simplify(rts.g, remove.multiple = F, remove.loops = T)
+### Subsetting the graph by removing non-trolls ###
 
 ## selecting nodes to exclude
 exclude <- V(rts.g)[account_category == "Non-Troll"]
@@ -254,7 +247,7 @@ g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
 ```{r}
-## Community detection
+## COMMUNITY DETECTION
 
 # running infomap community detection
 infomap <- cluster_infomap(g, nb.trials = 10,
@@ -267,6 +260,7 @@ modularity <- cluster_louvain(g.undir)
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
 
 nodes <- left_join(nodes, df.community, by = "handle")
+
 ## re-creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count, infomap, modularity
 rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
 
@@ -276,29 +270,29 @@ g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
 
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
-
 ```
 
 ```{r, include=F}
-## COMMUNITY DETECTION ANALYIS
+## COMMUNITY DETECTION
 
-troll_nodes <- left_join(troll_nodes, df.community, by = "handle") ## appending community variables
+## appending community variables to troll nodes df
+troll_nodes <- left_join(troll_nodes, df.community, by = "handle")
 
-## PLOT
-
-## reordering of the bars
+## FIGURE 1
+## reordering of the bars to represent descending troll count
 positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
 
 ## plot
 png(filename = "figure1.png", width = 700, height = 480)
-ggplot(troll_nodes, aes(x=account_category)) +
+figure1 <- ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend = F 
            ) + scale_x_discrete(limits = positions) + 
   ggtitle("Distribution of Communities among Account Categories by Linvill/Warren (2018)") +
     ylab("Number of Trolls") +
   xlab("")
+figure1 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="none")
 dev.off()
-
 ```
 
 ```{r}
@@ -306,9 +300,11 @@ dev.off()
 
 ## Right community (Linvill/Warren)
 ## gives proportion of communities in account categories
+## only important for community merging
+
+## Right
 right_troll_communities <- filter(nodes, account_category == "RightTroll")
 comms <- unique(right_troll_communities$modularity)
-
 for (com in comms){
   print(com)
   print(length(right_troll_communities$modularity[right_troll_communities$modularity==com])/length(right_troll_communities$modularity))
@@ -317,7 +313,6 @@ for (com in comms){
 ## Left
 left_troll_communities <- filter(nodes, account_category == "LeftTroll")
 comms <- unique(left_troll_communities$modularity)
-
 for (com in comms){
   print(com)
   print(length(left_troll_communities$modularity[left_troll_communities$modularity==com])/length(left_troll_communities$modularity))
@@ -327,26 +322,19 @@ for (com in comms){
 hashtag_troll_communities <- filter(nodes, account_category == "HashtagGamer")
 comms <- unique(hashtag_troll_communities$modularity)
 communities <- unique(troll_nodes$modularity)
-
 for (com in comms){
   print(com)
-  print(length(hashtag_troll_communities$modularity[hashtag_troll_communities$modularity==com])/length(hashtag_troll_communities$modularity))
-}
-
-for (com in comms){
   print(length(hashtag_troll_communities$modularity[hashtag_troll_communities$modularity==com])/length(hashtag_troll_communities$modularity))
 }
 
 ## Non-English
 nonenglish_troll_communities <- filter(nodes, account_category == "NonEnglish")
 comms <- unique(nonenglish_troll_communities$modularity)
-
 for (com in comms){
   print(length(nonenglish_troll_communities$modularity[nonenglish_troll_communities$modularity==com])/length(nonenglish_troll_communities$modularity))
 }
 
-## picking the biggest communities of each account category as the representative(s) for this group
-
+## picking the biggest communitie(s) of each account category as the representative(s) for this group
 ## creating new categories from modularity + Linvill/Warren
 
 troll_nodes$com <- troll_nodes$modularity
@@ -359,29 +347,7 @@ troll_nodes$com[troll_nodes$com == 8] <- "Right"
 troll_nodes$com[troll_nodes$com == 6] <- "Hashtager"
 troll_nodes$com[troll_nodes$com != "Left" & troll_nodes$com != "Right" & troll_nodes$com != "Hashtager"] <- "Other"
 
-## PLOT 2 WITH NEW CATEGORIES
-
-positions2 <- c("Right", "Left", "Hashtager", "Other")
-
-ggplot(troll_nodes, aes(x=com)) +
-  geom_bar(aes(fill = as.character(modularity)), show.legend=F 
-           ) + scale_x_discrete(limits = positions2) + 
-  ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
-  xlab("Sythesis of Qualitative and Modularity Algorithm Communities") +
-  ylab("Number of Trolls") +
-  labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
-
-## plot 3 with new categoires
-
-ggplot(troll_nodes, aes(x=com)) +
-  geom_bar(aes(fill = as.character(account_category)), show.legend=T 
-           ) + scale_x_discrete(limits = positions2) + 
-  ggtitle("Distribution of Account Categories among Newly Created Communities") +
-  xlab("Newly Created Categories") +
-  ylab("Number of Trolls") +
-  labs(caption = "Note: Color reflects account categories by Linvill/Warren (2018).")  + theme(legend.title=element_blank())
-
-## appending coms to nodes
+## appending newly determined communities to nodes
 com.df <- select(troll_nodes, handle, com)
 nodes <- left_join(nodes, com.df)
 nodes$com[is.na(nodes$com)] <- "Non-Troll"
@@ -392,24 +358,37 @@ rts.g <- graph.data.frame(rts.df, directed=T, vertices = nodes)
 
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
+rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
 
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
-
-## selecting nodes to exclude
-exclude <- V(rts.g)[com == "Non-Troll"]
-## excluding the nodes
-g.troll <- delete.vertices(rts.g, exclude)
-
-## creating an undirected subgraph
-g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
 ```{r}
+## FIGURE 2
+## account categories among new communities
+positions2 <- c("Right", "Left", "Hashtager", "Other")
+
+png(filename = "figure2.png", width = 700, height = 480)
+figure2 <- ggplot(troll_nodes, aes(x=com)) +
+  geom_bar(aes(fill = as.character(account_category)), show.legend=T 
+           ) + scale_x_discrete(limits = positions2) + 
+  ggtitle("Distribution of Account Categories among newly Determined Communities") +
+  xlab("Newly Determined Communities") +
+  ylab("Number of Trolls") +
+  labs(caption = "Note: Color reflects account categories by Linvill/Warren (2018).")  + theme(legend.title=element_blank())
+figure2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"))
+dev.off()
+```
+
+```{r}
+## ENTIRE CHUNK NOT IN TEXT
+## distribution of modularity communities among new communities
 ## new right community
 right_troll_communities <- filter(nodes, com == "Right")
 comms <- unique(right_troll_communities$modularity)
-
+print("new right communitiy:")
 for (com in comms){
   print(com)
   print(length(right_troll_communities$modularity[right_troll_communities$modularity==com])/length(right_troll_communities$modularity))
@@ -418,19 +397,40 @@ for (com in comms){
 ## new "other" community
 other_troll_communities <- filter(nodes, com == "Other")
 comms <- unique(other_troll_communities$modularity)
-
+print("new other communitiy:")
 for (com in comms){
   print(com)
   print(length(other_troll_communities$modularity[other_troll_communities$modularity==com])/length(other_troll_communities$modularity))
 }
+
+```
+
+```{r, include=F}
+## as plot
+positions2 <- c("Right", "Left", "Hashtager", "Other")
+
+ggplot(troll_nodes, aes(x=com)) +
+  geom_bar(aes(fill = as.character(modularity)), show.legend=F 
+           ) + scale_x_discrete(limits = positions2) + 
+  ggtitle("Distribution of Communities within Account Categories by Linvill/Warren (2018)") +
+  xlab("Sythesis of Qualitative and Modularity Algorithm Communities") +
+  ylab("Number of Trolls") +
+  labs(caption = "Note: Color reflects distinct communities using modularity community detection following ...")
 ```
 
 ```{r, include=F}
 ## GRAPH DENSITY
 
-## to do: calculate without only retweeted trolls!
 
-## whole graph, directed and undirected
+## Creating a subgraph with trolls only
+exclude <- V(g)[com == "Non-Troll"]
+## excluding the nodes
+g.troll <- delete.vertices(g, exclude)
+## creating an undirected subgraph
+g.troll.undir <- as.undirected(g.troll, mode = "collapse")
+
+
+## entire graph, directed and undirected; not in paper
 graph.density(g, loops = F)
 ## 0.00006
 graph.density(g.undir, loops = F)
@@ -438,114 +438,71 @@ graph.density(g.undir, loops = F)
 
 ## subgraph of trolls, directed and undirected
 graph.density(g.troll, loops = F)
-## 0.0076
+## 0.008
 graph.density(g.troll.undir, loops = F)
-## 0.0145
+## 0.015
 
-## for subgraphs of account type
+## for subgraphs of communities
 
 #### right troll
 ## right directed
-exclude <- V(g.troll)[account_category != "RightTroll"]
-g.troll.right <- delete.vertices(g.troll, exclude)
+exclude1 <- V(g.troll)[com != "Right"]
+g.troll.right <- delete.vertices(g.troll, exclude1)
 graph.density(g.troll.right, loops = F)
-## 0.0591
-
-## right undirected
-exclude <- V(g.troll.undir)[account_category != "RightTroll"]
-g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.right.undir, loops = F)
-## 0.1119
-
-#### left troll
-## left directed
-exclude <- V(g.troll)[account_category != "LeftTroll"]
-g.troll.left <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.left, loops = F)
-## 0.0082
-
-## left undirected
-exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
-g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.left.undir, loops = F)
-## 0.0158
-```
-
-```{r}
-a <- c("grummz", "clickhole")
-neighbors(g, "grummz", mode="in")
-
-degree()
-
-adjacent_vertices(g, a, mode="in")
-degree(g, b, mode="in")
-#a <- as.character(V(g)[name == v])
-
-for (v in V(g)[name]){
-  neighbors(g, v, mode = "in")
-}
-```
-
-
-```{r, include=F}
-## GRAPH DENSITY
-
-## to do: calculate without only retweeted trolls!
-
-## whole graph, directed and undirected
-graph.density(g, loops=F)
-## 0.00006
-graph.density(g.undir, loops=F)
-## 0.00012
-
-## subgraph of trolls, directed and undirected
-graph.density(g.troll, loops=F)
-## 0.029
-graph.density(g.troll.undir, loops=F)
-## 0.03
-
-## for subgraphs of account type
-
-#### right troll
-## right directed
-exclude <- V(g.troll)[com != "Right"]
-g.troll.right <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.right, loops=F)
-## 0.131
-
-## right undirected
-exclude <- V(g.troll.undir)[com != "Right"]
-g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.right.undir, loops=F)
-## 0.145
-
-#### left troll
-## left directed
-exclude <- V(g.troll)[com != "Left"]
-g.troll.left <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.left, loops=F)
-## 0.021
-
-## left undirected
-exclude <- V(g.troll.undir)[com != "Left"]
-g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.left.undir, loops=F)
 ## 0.038
+
+## right undirected
+exclude2 <- V(g.troll.undir)[com != "Right"]
+g.troll.right.undir <- delete.vertices(g.troll.undir, exclude2)
+graph.density(g.troll.right.undir, loops = F)
+## 0.074
+
+#### left troll
+## left directed
+exclude3 <- V(g.troll)[com != "Left"]
+g.troll.left <- delete.vertices(g.troll, exclude3)
+graph.density(g.troll.left, loops = F)
+## 0.006
+
+## left undirected
+exclude4 <- V(g.troll.undir)[com != "Left"]
+g.troll.left.undir <- delete.vertices(g.troll.undir, exclude4)
+graph.density(g.troll.left.undir, loops = F)
+## 0.012
 
 #### Hashtager
 ## hashtager directed
-exclude <- V(g.troll)[com != "Hashtager"]
-g.troll.hash <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.hash, loops=F)
-## 0.564
+exclude5 <- V(g.troll)[com != "Hashtager"]
+g.troll.hash <- delete.vertices(g.troll, exclude5)
+graph.density(g.troll.hash, loops = F)
+## 0.095
 
 ## hashtager undirected
-exclude <- V(g.troll.undir)[com != "Hashtager"]
-g.troll.hash.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.hash.undir, loops=F)
-## 0.466 LOWER????
+exclude6 <- V(g.troll.undir)[com != "Hashtager"]
+g.troll.hash.undir <- delete.vertices(g.troll.undir, exclude6)
+graph.density(g.troll.hash.undir, loops = F)
+## 0.177
 ```
 
+```{r}
+## FIGURE 3
+## Graph density bar plot
+commu <- c("Right", "Right Undirected", "Left", "Left Undirected","Hashtager", "Hashtager Undirected")
+color <- c(1,1,2,2,3,3)
+dens <- c(graph.density(g.troll.right, loops = F), graph.density(g.troll.right.undir, loops = F), graph.density(g.troll.left, loops = F), graph.density(g.troll.left.undir, loops = F), graph.density(g.troll.hash, loops = F), graph.density(g.troll.hash.undir, loops = F))
+
+
+df.dens <- data.frame(com=commu, dens=dens, color=color)
+
+png(filename = "figure3.png", width = 700, height = 480)
+figure3 <- ggplot(df.dens, aes(commu, dens)) +
+  geom_col(aes(fill=as.character(color))) +
+  ylab("Graph Density") +
+  xlab("")
+figure3 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="none")
+dev.off()
+```
 
 ```{r, include = F}
 ###COMPUTING k-cores###
@@ -580,55 +537,29 @@ summary(kin4)
 V(g)$degree <- degree(g)
 ```
 
-
-
 ```{r, inlcude=F}
-## exporting the rts.g graph object as a graphml file 
+## exporting the graph object as a graphml file 
 write.graph(g, file="troll_network.graphml", format="graphml")
 ```
 
-
-weiterer code aus Yevgeniys script rauskopiert
-
+#################################
 ```{r}
-## Vizualising communites based on infomap algorithm
-plot(g.troll,
-     vertex.size = 2,
+## WIP
+## Vizualising communites
+
+plot(g.troll.right.undir,
+     vertex.size = 20,
      vertex.label.color = "black",
-     vertex.label.cex = .1
+     vertex.label.cex = 1,
+     vertex.color = V(g.troll.right.undir)$com
      )
-
-## Vizualising communities based on modularity optimization algorithm
-plot(g,
-     vertex.size = 20,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = modularity$membership)
-
-## Vizualising communites based on Girvan and Newman's degree-based community detection
-plot(g,
-     vertex.size = 20,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = deg_com$membership)
-
-
-
-### example:
-plot(g,
-     vertex.size = 20,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = V(g)$yourvariablename)
 
 ```
 
 
 
 ```{r, include=F}
-## creating summary statistics
-library(stargazer)
-
+## TABLE 1
 ## using numbers from calculations that can be seen in the chapter on data description
 User <- c("Troll", "Non-Troll", "Total")
 N <- c("404", "36,485", "36,889")
@@ -641,6 +572,7 @@ stargazer(table1, summary=F, align=T, title="User Statistics")
 ```
 
 ```{r, include=F}
+## TABLE 2
 ## creating summary stats for trolls only
 
 ## first, vectors are created, which are later used as variables in the table
@@ -692,6 +624,7 @@ stargazer(table2, summary=F, align=T, title="Troll Statistics")
 #################################################
 #################################################
 From here on, other plots etc. are prepared
+<<<<<<< HEAD
 ```{r}
 ## understanding user ids, WILL BE TIDIED UP
 length(unique(tweets$user_id))
@@ -718,6 +651,20 @@ summary(unique_users$user_id)
 summary(tweets$created_str)
 ```
 
+=======
+
+```{r}
+plot(g,
+     main="K Cores",
+     vertex.size = 20,
+     vertex.label = V(g)$Kcore,
+     vertex.label.color = "black",
+     vertex.label.cex = 1,
+     vertex.color = "white")
+```
+
+
+>>>>>>> adfe9f5e2259ea4dd1057473520bb85f92a8ecfa
 ```{r, include=F}
 ## creating a data frame with weighted and unweighted degree centrality for each profile
 df <- data.frame(name = V(g)$name,
@@ -758,29 +705,3 @@ rank.outdegree.w <- df %>% select(name, troll, account_category, outdegree,
 ```{r}
 kable(rank.outdegree[1:10,], caption = "Top 10 profiles ranked by outdegree")
 ```
-
-
-```{r, echo=F}
-
-
-## vizualizing the graph
-par(bg ="grey10")
-plot.igraph(g.troll,layout= layout.fruchterman.reingold(g.troll),
-            edge.color="grey",
-            edge.curved= .2, vertex.label = NA, vertex.frame.color="#ffffff",
-            vertex.size = 2, edge.size = 0.01, edge.arrow.size = 0.01)
-```
-
-```{r, echo=F}
-## decomposing the graph into components and returning the largest one
-comp <- decompose(g.troll, mode = c("weak"), max.comps = 1,
-                  min.vertices = 1)
-## plotting the graph
-par(bg ="grey10")
-plot.igraph(comp[[1]],layout= layout.fruchterman.reingold(comp[[1]]),
-            edge.color="grey",
-            edge.curved= .2, vertex.label = NA, vertex.frame.color="#ffffff",
-            vertex.size = 4, edge.size = 0.005, edge.arrow.size = 0.01)
-```
-
-
