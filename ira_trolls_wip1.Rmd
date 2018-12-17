@@ -113,7 +113,7 @@ handles_all <- unique(as.data.frame(c(rt.sender, rt.receiver))) %>% rename(handl
 ## There are 36,889 unique handles in the retweet dataset
 ## There are senders (only trolls) and receivers (trolls and non-trolls) in the unique set of handles.
 
-36889 - legth(rt.receiver.df$handle)
+36889 - length(rt.receiver.df$handle)
 ## Number of unique handles increases by 182 when adding the senders. Therefore, there are 182 trolls in the data, who sent but did not receive retweets
 
 182 / length(rt.sender.df$handle)
@@ -157,6 +157,8 @@ handles_trolls <- rbind(trolls_official, trolls_official_new, handles) %>% uniqu
 ```
 
 ```{r, include=F}
+###Merging the older NBC list of trolls, with the newer Linvill/Warren; adding "troll" and "non-troll" labels as attributes###
+
 ## how many trolls are in the overall dataset, either as senders or receivers?
 trolls_official$troll <- "troll" ## assigning all of these users a troll
 trolls$troll <- "troll"
@@ -188,6 +190,8 @@ length(nodes$troll[nodes$troll=="non-troll"])
 ```
 
 ```{r, include=F}
+###Adding follower count as node attribute###
+
 ## loading the additional user data to extract followers count
 followers <- read.csv("Raw Data/users.csv", stringsAsFactors = F, sep = ",")
 
@@ -215,6 +219,8 @@ nodes <- nodes %>% rename(troll = troll.y)
 ```
 
 ```{r, include = F}
+###Creating the graph###
+
 ## Creating a data frame from the sender-receiver objects
 rts.df <- data.frame(rt.sender, rt.receiver)
 
