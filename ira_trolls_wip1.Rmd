@@ -20,7 +20,7 @@ library(ggplot2)
 ```
 
 ```{r, include=F}
-## loading the NBC News dataset and setting working directory
+###Loading the NBC News dataset###
 tweets <- read.csv("Raw Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
@@ -67,6 +67,8 @@ length(na.omit(handles$account_category)) / length(handles$handle)
 ```
 
 ```{r, include=F}
+###Extracting the retweets out of the tweets text###
+
 ## Code by Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
 
 ## selecting only the retweets
@@ -97,7 +99,7 @@ rt.receiver <- (gsub("@", "", rt.receiver)) ## removing "@"
 
 ## how many unique retweet receivers?
 rt.receiver.df <- as.data.frame(rt.receiver) %>% unique() %>% rename(handle = rt.receiver)
-legth(rt.receiver.df$handle)
+length(rt.receiver.df$handle)
 ## 36,707 unique handles are being retweeted
 ## calculating the share of trolls later
 
@@ -226,6 +228,7 @@ rts.df <- data.frame(rt.sender, rt.receiver)
 
 ## creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
 rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
+rts.g <- simplify(rts.g, remove.multiple = T)
 
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
@@ -235,72 +238,19 @@ g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include = F}
-## subsetting the graph by removing non-trolls
+###Subsetting the graph by removing non-trolls###
 
 ## removing loops and multiples
-rts.g <- simplify(rts.g, remove.multiple = T, remove.loops = T)
+rts.g <- simplify(rts.g, remove.multiple = F, remove.loops = T)
 
 ## selecting nodes to exclude
 exclude <- V(rts.g)[account_category == "Non-Troll"]
+
 ## excluding the nodes
 g.troll <- delete.vertices(rts.g, exclude)
 
 ## creating an undirected subgraph
 g.troll.undir <- as.undirected(g.troll, mode = "collapse")
-```
-
-```{r, include=F}
-## GRAPH DENSITY
-
-## to do: calculate without only retweeted trolls!
-
-## whole graph, directed and undirected
-graph.density(g, loops = F)
-## 0.00006
-graph.density(g.undir, loops = F)
-## 0.00012
-
-## subgraph of trolls, directed and undirected
-graph.density(g.troll, loops = F)
-## 0.0076
-graph.density(g.troll.undir, loops = F)
-## 0.0145
-
-## for subgraphs of account type
-
-#### right troll
-## right directed
-exclude <- V(g.troll)[account_category != "RightTroll"]
-g.troll.right <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.right, loops = F)
-## 0.0591
-
-## right undirected
-exclude <- V(g.troll.undir)[account_category != "RightTroll"]
-g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.right.undir, loops = F)
-## 0.1119
-
-#### left troll
-## left directed
-exclude <- V(g.troll)[account_category != "LeftTroll"]
-g.troll.left <- delete.vertices(g.troll, exclude)
-graph.density(g.troll.left, loops = F)
-## 0.0082
-
-## left undirected
-exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
-g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
-graph.density(g.troll.left.undir, loops = F)
-## 0.0158
-```
-
-
-```{r, include = F}
-## computing graph coreness
-V(g)$Kcore = graph.coreness(g)
-## computing degree
-V(g)$degree <- degree(g)
 ```
 
 ```{r}
@@ -313,10 +263,7 @@ infomap <- cluster_infomap(g, nb.trials = 10,
 # running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
 
-##attatching the communities to the data frames
-V(g)$modularity <- modularity$membership
-V(g)$infomap <- infomap$membership
-
+## creating a data frame with the communities
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
 
 nodes <- left_join(nodes, df.community, by = "handle")
@@ -478,6 +425,52 @@ for (com in comms){
 }
 ```
 
+```{r, include=F}
+## GRAPH DENSITY
+
+## to do: calculate without only retweeted trolls!
+
+## whole graph, directed and undirected
+graph.density(g, loops = F)
+## 0.00006
+graph.density(g.undir, loops = F)
+## 0.00012
+
+## subgraph of trolls, directed and undirected
+graph.density(g.troll, loops = F)
+## 0.0076
+graph.density(g.troll.undir, loops = F)
+## 0.0145
+
+## for subgraphs of account type
+
+#### right troll
+## right directed
+exclude <- V(g.troll)[account_category != "RightTroll"]
+g.troll.right <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.right, loops = F)
+## 0.0591
+
+## right undirected
+exclude <- V(g.troll.undir)[account_category != "RightTroll"]
+g.troll.right.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.right.undir, loops = F)
+## 0.1119
+
+#### left troll
+## left directed
+exclude <- V(g.troll)[account_category != "LeftTroll"]
+g.troll.left <- delete.vertices(g.troll, exclude)
+graph.density(g.troll.left, loops = F)
+## 0.0082
+
+## left undirected
+exclude <- V(g.troll.undir)[account_category != "LeftTroll"]
+g.troll.left.undir <- delete.vertices(g.troll.undir, exclude)
+graph.density(g.troll.left.undir, loops = F)
+## 0.0158
+```
+
 ```{r}
 a <- c("grummz", "clickhole")
 neighbors(g, "grummz", mode="in")
@@ -555,10 +548,35 @@ graph.density(g.troll.hash.undir, loops=F)
 
 
 ```{r, include = F}
-## computing graph coreness
-V(g)$Kcore = graph.coreness(g)
-core.df <- graph.coreness(g) %>% as.data.frame()
-## computing degree
+###COMPUTING k-cores###
+
+## computing graph coreness undirected and incoreness
+V(g)$kcore = graph.coreness(g)
+V(g)$kincore = graph.coreness(g, mode = "in")
+
+
+# storing a list of nodes that belong to k <=9 and kin <=3
+exclude_k10 <- V(g)[kcore < 10]
+exclude_kin4 <- V(g)[kincore < 4]
+
+# removing these nodes in order to make a k-10-core and a kin-4-core
+k10 <- delete.vertices(g, exclude_k10)
+kin4 <- delete.vertices(g, exclude_kin4)
+
+# inspecting the graphobjects to see number of nodes and edges
+summary(k10)
+1257 / 36889
+18214 / 147428
+#3.4% of the nodes and 12.3% of the edges
+
+summary(kin4)
+1754 / 36889
+11988 / 147428
+#4.8% of the nodes and 8.1% of the edges
+```
+
+```{r, include = F}
+
 V(g)$degree <- degree(g)
 ```
 
@@ -699,18 +717,6 @@ summary(unique_users$user_id)
 
 summary(tweets$created_str)
 ```
-
-
-```{r}
-plot(g,
-     main="K Cores",
-     vertex.size = 20,
-     vertex.label = V(g)$Kcore,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = "white")
-```
-
 
 ```{r, include=F}
 ## creating a data frame with weighted and unweighted degree centrality for each profile

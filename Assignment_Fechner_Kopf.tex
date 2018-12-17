@@ -14,6 +14,8 @@
 %Selbe Schriftart für Überschriften												
 \addtokomafont{disposition}{\normalfont\bfseries}
 
+\usepackage{amsmath}
+
 %Zeilenabstand							
 \usepackage[onehalfspacing]{setspace}
 
@@ -22,8 +24,7 @@
 %Formatierung für Anführungszeichen
 \usepackage[autostyle]{csquotes}
 %u.a. in et al. umwandeln
-\DefineBibliographyStrings{ngerman}{
-   andothers = {{et\,al\adddot}},}
+%\DefineBibliographyStrings{english}{andothers = {{et\,al\adddot}},}
 %Formatiert die Zitationsklammern
 \renewcommand{\labelnamepunct}{\addcolon\addspace}
 \renewcommand{\postnotedelim}{\addcolon\addspace}
@@ -61,7 +62,7 @@
 %\captionsetup{format=plain, indention=0cm, justification=justified, singlelinecheck=off, font={small, singlespacing}}
 %\captionsetup[table]{name=Tab. }
 
-%Wird für das R-Paket stargazer benötigt
+%Wird für das r-Paket stargazer benötigt
 \usepackage{dcolumn}
 
 %Listen
@@ -71,10 +72,10 @@
 %\usepackage{pdfpages}
 
 %Anhang ohne Seitenzahl im ToC
-\makeatletter
-\let\partbackup\l@part
-\renewcommand*\l@part[2]{\partbackup{#1}{}}
-\makeatother
+%\makeatletter
+%\let\partbackup\l@part
+%\renewcommand*\l@part[2]{\partbackup{#1}{}}
+%\makeatother
 
 \clubpenalty = 10000
 \widowpenalty = 10000
@@ -184,7 +185,9 @@ To understand the IRA's division of labor between the accounts, we begin with te
 
 One important measure for the cooperation of the accounts is graph density, the proportion of all possible edges that are present in the graph (\cite[101]{wasserman_social_1994}). Since the network is ego-centered, it only makes sense to calculate density for the troll subgraph. We will then compare densities of the different communities, which can give an indication weather the IRA has distinctive strategies for those groups. Following Wassermann and Faust (\cite*[102]{wasserman_social_1994}) we calculate the density of the different community subgraphs \( \Delta_{c} \) as: \[ \Delta_{c} = \frac{2L_{c}}{g_{c}(g_{c} - 1)} ,\] where \( L_{c} \) is the number of edges present in the community subgraph, and \( g_{s} \) is the number of nodes in said graph. In communities with higher density, the accounts are working more together, meaning they spread information further through retweeting, while accounts in less dense communities rely more on information they put into the network themselves.
 
-Identifying the most important accounts helps to understand the structure of the IRA. Operationalizing importance in SNA is usually done through centrality and prestige indices, whereas not only the chosen actors are considered prestigious, but also those doing the choosing (\cite[170]{wasserman_social_1994}). Since the network is ego-centered around the troll accounts, the indices have limited reach in their interpretation, but still deliver important insights. To show the most central accounts, we will calculate outdegree. The index can only be computed for IRA accounts, since they are the only retweeting in our dataset. We will calculate the outdegree weighted and unweighted respectively, the former results in the accounts that retweet the majority of different accounts, the latter in those retweeting the most.\footnote{A weighted graph is a graph in which each edge carries a value (\cite[140]{wasserman_social_1994}), in this case the number of retweets between two accounts. In an unweighted graph, each edge has the value 1.} The outdegree of a node \( d_{out}(n_{i}) \) is computed as \[ d_{out}(n_{i}) = \sum_{j} x_{ij} ,\] where \( x_{ij} \) is an edge from \( i \) to \( j \)(\cite[cf.][178]{wasserman_social_1994}. For the weighted outdegree \( x_{ij} \) is multiplied by the value of the edge. Prestige, on the other hand, will be calculated through indegree, which results in those accounts retweeted the most and can therefore tell about what accounts the IRA draws on. It will also be computed for the weighted and unweighted graph separately, which shows the accounts retweeted by the majority of different accounts and those retweeted the most in general respectively. The indegree of a node \( d_{in}(n_{i}) \) is computed simply as \[ d_{in}(n_{i}) = \sum_{j} x_{ji} ,\] where \( x_{ji} \) is an edge from \( j \) to \( i \) (\cite[cf.][202]{wasserman_social_1994}. For the weighted outdegree \( x_{ji} \) is multiplied by the value of the edge.
+Identifying the most important accounts helps to understand the structure of the IRA. Operationalizing importance in SNA is usually done through centrality and prestige indices, whereas not only the chosen actors are considered prestigious, but also those doing the choosing (\cite[170]{wasserman_social_1994}). Since the network is ego-centered around the troll accounts, the indices have limited reach in their interpretation, but still deliver important insights. To show the most central accounts, we will calculate outdegree. The index can only be computed for IRA accounts, since they are the only retweeting in our dataset. We will calculate the outdegree weighted and unweighted respectively, the former results in the accounts that retweet the majority of different accounts, the latter in those retweeting the most.\footnote{A weighted graph is a graph in which each edge carries a value (\cite[140]{wasserman_social_1994}), in this case the number of retweets between two accounts. In an unweighted graph, each edge has the value 1.} The outdegree of a node \( d_{out}(n_{i}) \) is computed as \[ d_{out}(n_{i}) = \sum_{j} x_{ij} ,\] where \( x_{ij} \) is an edge from \( i \) to \( j \) (\cite[cf.][178]{wasserman_social_1994}. For the weighted outdegree \( x_{ij} \) is multiplied by the value of the edge. Prestige, on the other hand, will be calculated through indegree, which results in those accounts retweeted the most and can therefore tell about what accounts the IRA draws on. It will also be computed for the weighted and unweighted graph separately, which shows the accounts retweeted by the majority of different accounts and those retweeted the most in general respectively. The indegree of a node \( d_{in}(n_{i}) \) is computed simply as \[ d_{in}(n_{i}) = \sum_{j} x_{ji} ,\] where \( x_{ji} \) is an edge from \( j \) to \( i \) (\cite[cf.][202]{wasserman_social_1994}. For the weighted outdegree \( x_{ji} \) is multiplied by the value of the edge.
+
+Finally, we will look at the most engaged users in the network to identify the so-called super-spreaders of information. In SNA, the ability to spread information better than other individuals is ascribed to their unique location in the network, which makes identifying those a prime task of analyzing networks used for false information (\cite[1]{pei_searching_2015}). Pei et al. (2015) show that, compared to other approaches, the k-core method predicts the super-spreaders most accurately. \enquote{A k-core is a maximal subset of the network where all nodes are connected to at least \enquote{k} number of other nodes: so \enquote{k} can be any whole number} (\cite[983]{golovchenko_state_2018}). Hence, the k-core specifies a subgraph via the number of ties that must be present between nodes, it is based on the nodal degree. We can define a subgraph \( G_{s} \) as a k-core if \[ d_{s}(i) \geq k \text{ for all } n_{i} \in N_{s} ,\] where \( d_{s}(i) \) is the (in-)degree of node \( i \) and \( N_{s} \) the set of nodes in the subgraph (\cite[266]{wasserman_social_1994}). Once again, the network being ego-centered limits the validity of the results, since every non-troll in reality has a higher degree through retweets from other non-troll accounts and retweeting themselves. We can therefore only identify the most important IRA accounts regarding their own network. To account for this, we will also compute the k-in-core through the indegrees. The idea is that information from one account is spread quickly, if this account is retweeted a lot and the accounts retweeting it also get retweeted a lot.
 
 \section{Analysis}
 
