@@ -512,6 +512,13 @@ exclude_kin4 <- V(g)[kincore < 4]
 k10 <- delete.vertices(g, exclude_k10)
 kin4 <- delete.vertices(g, exclude_kin4)
 
+## appending coreness and incoreness to node dataframe
+core.df <- data.frame(handle = V(g)$name, coreness = V(g)$kcore)
+nodes <- left_join(nodes, core.df)
+
+incore.df <- data.frame(handle = V(g)$name, incoreness = V(g)$kincore)
+nodes <- left_join(nodes, incore.df)
+
 # inspecting the graphobjects to see number of nodes and edges
 summary(k10)
 1257 / 36889
@@ -595,6 +602,22 @@ ggplot(troll_nodes, aes(x = outdegree, y = indegree)) +
   geom_point(aes(color=com)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right", legend.background = element_blank()) + xlab("Outdegree") + ylab("Indegree")
 ```
+
+```{r}
+core_nodes <- filter(nodes, coreness >= 10) %>% arrange(-outdegree)
+incore_nodes <- filter(nodes, incoreness >= 4) %>% arrange(-outdegree)
+
+core_nodes <- core_nodes[1:30,]
+incore_nodes <- incore_nodes[1:30,]
+
+png(filename = "k10_figure.png", width = 700, height = 480)
+ggplot(core_nodes, aes(x = reorder(handle, -outdegree), y=outdegree)) +
+  geom_col(aes(fill=com)) + theme(panel.grid.major = element_blank(), legend.title=element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right", legend.background = element_blank()) +
+  theme(axis.text.x = element_text(angle=90)) + xlab("")
+dev.off()
+```
+
 
 ```{r, inlcude=F}
 ## GRAPHML FILE
