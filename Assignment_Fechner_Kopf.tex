@@ -58,9 +58,10 @@
 %Paket, um Grafiken davon abzuhalten, außerhalb bestimmter grenzen zu floaten [section]: verbietet gleiten außerhalb der Section
 %\usepackage[section]{placeins}
 %zum Formatieren der Bildunterschriften
-%\usepackage{caption}
-%\captionsetup{format=plain, indention=0cm, justification=justified, singlelinecheck=off, font={small, singlespacing}}
+\usepackage{caption}
+\captionsetup{format=plain, indention=0cm, justification=justified, singlelinecheck=off, width=.95\linewidth, font={small, singlespacing}}
 %\captionsetup[table]{name=Tab. }
+\setkomafont{captionlabel}{\bfseries}
 
 %Wird für das r-Paket stargazer benötigt
 \usepackage{dcolumn}
@@ -82,7 +83,7 @@
 \displaywidowpenalty = 10000
 
 %Verlinktes ToC
-%\usepackage[colorlinks, pdfpagelabels, pdfstartview=FitH, bookmarksopen=true, bookmarksnumbered=true, linkcolor=black, urlcolor=black, plainpages=false, hypertexnames=false, citecolor=black]{hyperref}
+\usepackage[colorlinks, pdfpagelabels, pdfstartview=FitH, bookmarksopen=true, bookmarksnumbered=true, linkcolor=black, urlcolor=black, plainpages=false, hypertexnames=false, citecolor=black]{hyperref}
 
 
 
@@ -132,12 +133,10 @@ To analyze the structure and possible strategies of the IRA, we will take social
 
 We will use a dataset, published by NBC News (\cite*{popken_twitter_2018}), consisting of 203,451 Tweets by 453 accounts between July 2014 and September 2017, which were linked to the IRA by an official document handed over to US Congress by Twitter. Twitter justifies this linking by referring to ``third party sources'', which makes it impossible to reconstruct or evaluate their method. Therefore, we have to assume those accounts' links to the IRA to be correct, as it is the best evaluation available.
 
-To create the social network, we need to clean the data: First, we drop any of the tweets that are not retweets, which leaves us with 147,428 retweets by 453 troll accounts. Second, 120 trolls, who did not retweet at all, were dropped accordingly. Our dataset now consists a set of 333 unique troll Twitter handles\footnote{A Twitter handle is the screen name of a Twitter account that can be changed by the users.}, who are retweeting others. A variable stating the unique User ID is used to validate uniqueness of the users, showing that there are indeed no duplicate User IDs in the dataset. Since, we only have information about who these 333 accounts did retweet, but not by whom they were retweeted, the network is ego-centered around the group of 333 trolls. Of these 333 trolls, 151 (ca 45\%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (ca 55\%) trolls only retweeted others, but were not retweeted themselves, making them only senders.\footnote{We define a retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the retweet receiver.} A third group of 71 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 404. These 71 trolls were retweeted by others, though did not send retweets themselves. Finally, the big body of users in the dataset consists of 36,485 users, who are retweeted by the trolls, but are not themselves categorized as trolls by Twitter. Table 1 gives a first overview over out dataset. Overall, there are 36,889 unique twitter users in the dataset, 404 classified trolls and 36,485 non-trolls. The retweets contain relational information about one user retweeting another, therefore creating a directional edge between the two. Thus, the graph is a directed, ego-centered network of 404 IRA accounts with 36,889 unique Twitter accounts as nodes and edges representing retweets from the sender to the receiver.
+To create the social network, we need to clean the data: First, we drop any of the tweets that are not retweets, which leaves us with 147,428 retweets by 453 troll accounts. Second, 120 trolls, who did not retweet at all, were dropped accordingly. Our dataset now consists a set of 333 unique troll Twitter handles\footnote{A Twitter handle is the screen name of a Twitter account that can be changed by the users.}, who are retweeting others. A variable stating the unique User ID is used to validate uniqueness of the users, showing that there are indeed no duplicate User IDs in the dataset. Since, we only have information about who these 333 accounts did retweet, but not by whom they were retweeted, the network is ego-centered around the group of 333 trolls. Of these 333 trolls, 151 (ca 45\%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (ca 55\%) trolls only retweeted others, but were not retweeted themselves, making them only senders.\footnote{We define a retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the retweet receiver.} A third group of 71 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 404. These 71 trolls were retweeted by others, though did not send retweets themselves. Finally, the big body of users in the dataset consists of 36,485 users, who are retweeted by the trolls, but are not themselves categorized as trolls by Twitter. Table~\ref{tab:userstat} gives a first overview over out dataset. Overall, there are 36,889 unique twitter users in the dataset, 404 classified trolls and 36,485 non-trolls. The retweets contain relational information about one user retweeting another, therefore creating a directional edge between the two. Thus, the graph is a directed, ego-centered network of 404 IRA accounts with 36,889 unique Twitter accounts as nodes and edges representing retweets from the sender to the receiver.
 
 \begin{table}[!htbp] \centering 
-  \caption{User Statistics} 
-  \label{} 
-\begin{tabular}{@{\extracolsep{5pt}} cccc} 
+\begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
 User & N & Senders & Receivers \\ 
@@ -146,15 +145,15 @@ Troll & 404 & 333 & 222 \\
 Non-Troll & 36,485 & 0 & 36,485 \\ 
 Total & 36,889 & 333 & 36,707 \\ 
 \hline \\[-1.8ex] 
-\end{tabular} 
+\end{tabular*} 
+  \caption{User Statistics}
+  \label{tab:userstat} 
 \end{table} 
 
-To further extend our data and our scope of analysis, we are adding additional qualitative information on the IRA trolls, provided by Darren Linvill and Patrick Lee Warren (\cite*{linvill_troll_2018}) via the online news outlet FiveThirtyEight (citation). Linvill and Warren conduct a qualitative analysis, categorizing a sample of 1,133 IRA troll accounts by examining the tweet content and the account names, applying a temporal analysis of the trolls tweeting behavior after. They ``identified five categories of IRA-associated Twitter handles, each with unique patterns of behaviors: \textit{Right Troll}, \textit{Left Troll}, \textit{Newsfeed}, \textit{Hashtag Gamer}, and \textit{Fearmonger}.'' (\cite[6]{linvill_troll_2018}). In addition, there are three categories, which are not used within their analysis, those being \textit{Non-English}, \textit{Commercial} and \textit{Unknown}. The categories \textit{Right Troll} and \textit{Left Troll} need little explanation, as they include users who broadcasted right-leaning populist and socially liberal messages. \textit{Hashtag Gamers} are users who are playing word games on Twitter, mostly non-political, though sometimes including left- or right-leaning messages. \textit{Newsfeed} Trolls are posing as local US News Agencies, mostly linking to legitimate news content, often with a pro-Russian perspective. Fearmongers spread news of crisis events such as Tweets about salmonella infections. The \textit{Non-English} troll category includes users who tweeted in other languages than English, predominately Russian, some German and little French and Spanish. \textit{Commercial} Trolls are not included in our dataset. Finally, users were categorized as \textit{Unknown}, if they could not be assigned to other categories for lack of information in their tweets. These categories will be included in this paper's analysis, since might be interesting to see how they interact with the other trolls. We are appending Linvill and Warren's account categories to our data, finding categories are available for 394 of the 404 troll handles in our dataset, meaning that around 98\% of the trolls in our dataset are categorized. Table 2 shows the distribution of the categories among our dataset.
+To further extend our data and our scope of analysis, we are adding additional qualitative information on the IRA trolls, provided by Darren Linvill and Patrick Lee Warren (\cite*{linvill_troll_2018}) via the online news outlet FiveThirtyEight (citation). Linvill and Warren conduct a qualitative analysis, categorizing a sample of 1,133 IRA troll accounts by examining the tweet content and the account names, applying a temporal analysis of the trolls tweeting behavior after. They ``identified five categories of IRA-associated Twitter handles, each with unique patterns of behaviors: \textit{Right Troll}, \textit{Left Troll}, \textit{Newsfeed}, \textit{Hashtag Gamer}, and \textit{Fearmonger}.'' (\cite[6]{linvill_troll_2018}). In addition, there are three categories, which are not used within their analysis, those being \textit{Non-English}, \textit{Commercial} and \textit{Unknown}. The categories \textit{Right Troll} and \textit{Left Troll} need little explanation, as they include users who broadcasted right-leaning populist and socially liberal messages. \textit{Hashtag Gamers} are users who are playing word games on Twitter, mostly non-political, though sometimes including left- or right-leaning messages. \textit{Newsfeed} Trolls are posing as local US News Agencies, mostly linking to legitimate news content, often with a pro-Russian perspective. Fearmongers spread news of crisis events such as Tweets about salmonella infections. The \textit{Non-English} troll category includes users who tweeted in other languages than English, predominately Russian, some German and little French and Spanish. \textit{Commercial} Trolls are not included in our dataset. Finally, users were categorized as \textit{Unknown}, if they could not be assigned to other categories for lack of information in their tweets. These categories will be included in this paper's analysis, since might be interesting to see how they interact with the other trolls. We are appending Linvill and Warren's account categories to our data, finding categories are available for 394 of the 404 troll handles in our dataset, meaning that around 98\% of the trolls in our dataset are categorized. Table~\ref{tab:trollstat} shows the distribution of the categories among our dataset.
 
 \begin{table}[!htbp] \centering 
-  \caption{Troll Statistics} 
-  \label{} 
-\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
+\begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
 Category & N & Senders & Receivers & Average\_Followers \\ 
@@ -168,10 +167,12 @@ Fearmonger & 4 & 0 & 4 & 0 \\
 Unknown & 11 & 10 & 3 & 3306 \\ 
 Total & 404 & 333 & 222 & 4476 \\ 
 \hline \\[-1.8ex] 
-\end{tabular} 
+\end{tabular*} 
+  \caption{Troll Statistics} 
+  \label{tab:trollstat} 
 \end{table} 
  
-As another attribute, we are appending information on the count of followers of the troll accounts from a second dataset provided by NBC news. The information on the count of followers provided only includes one figure and does not vary over time, without specification of when these follower counts were obtained. We will assume that they are at least to some degree representative and use them as a heuristic. Table 2 gives the average number of followers for each account category.
+As another attribute, we are appending information on the count of followers of the troll accounts from a second dataset provided by NBC news. The information on the count of followers provided only includes one figure and does not vary over time, without specification of when these follower counts were obtained. We will assume that they are at least to some degree representative and use them as a heuristic. Table~\ref{tab:trollstat} gives the average number of followers for each account category.
 
 Lastly, we are using the full time period of retweets, from July 2014 to September 2017. This paper is not interested in a time period preceding a specific event, like an election or a specific trending discussion, but rather strategic behavior of the trolls in general. That is why it seems to be the right approach to include all of the Tweets in the analysis.
 
@@ -214,10 +215,10 @@ Examining the magnitude of densities across different community subgraphs, we fi
 We now  analyze the degree centrality of our graph. We start with the outdegree, which we use as a measure for centrality and the weighted outdegree, which gives additional information on the activity of the user. Because of our network is ego-centered around the central group of trolls, only troll accounts have outdegrees. Table~\ref{tab:out} shows the top 10 users ranked by outdegree.
 
 \begin{table}[!htbp] \centering 
-\begin{tabular}{@{\extracolsep{5pt}} cccccc} 
+\begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Followers & Outdegree & Outdegree\_Weighted \\ 
+User & Community & Category & Followers & Outdegree & Outdegree weighted \\ 
 \hline \\[-1.8ex] 
 ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
 patriotblake & Left & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
@@ -230,20 +231,18 @@ baobaeham & Left & LeftTroll & $1,032$ & $1,802$ & $3,215$ \\
 michellearry & Other & RightTroll & $3,229$ & $1,611$ & $2,677$ \\ 
 \_nickluna\_ & Right & RightTroll & $1,457$ & $1,597$ & $2,825$ \\ 
 \hline \\[-1.8ex] 
-\end{tabular} 
+\end{tabular*} 
   \caption{Top 10 users ranked by outdegree} 
   \label{tab:out} 
 \end{table}  
 
-The firsted ranked user \textit{ameliebaldwin} really sticks out with an outdegree of 4,896, meaning that the user retweeted nearly 5,000 different users. The weighted outdegree of \textit{ameliebaldwin} is 9,243, which includes multiple retweets of the same user. Since the weighted outdegree is significantly higher than the unweighted one, this means that \textit{ameliebaldwin}} retweeted a large number of users only a few times, rather than retweeting the same small number of users over and over again. The category and community allocation disagree for \textit{ameliebaldwin}. While the qualitative analysis by Linvill/Warren \citep*{linvill_troll_2018} found the user to be a right troll, the community detection algorithm did not find it to belong one of the major right troll communities. This exact pattern of disagreement reappears for three other users in Table 3. Subsequent to \textit{ameliebaldwin}, there is a group of accounts retweeting more than 2,000 different users, which is mainly dominated by right trolls following the categorization, but also with partial disagreement, following the above-mentioned pattern. The fourth ranked user \textit{giselleevns} sticks out for having the most followers in the ranking with 24,344. With a mean number of followers of 3,022 and a maximum of 61,109, \textit{giselleevns} appears to be one of the most followed accounts in the dataset. Though, it needs to be noted, that information on followers is only available for troll accounts in our dataset. Contrary to the mostly right troll dominated top ten ranked outdegree users, \textit{giselleevns} was allocated to the hashtager community, with disagreement of Linvill/Warren \citep*{linvill_troll_2018}, who could not attribute the account to a category. When ranking the account for weighted outdegree, as can be seen in Table 4, the picture slightly changes. While some accounts like \textit{ameliebaldwin} and \textit{giselleevns} remain in high-ranked positions, six left troll accounts are now in the ranking, for which category and community allocation mostly agrees.
+The firsted ranked user \textit{ameliebaldwin} really sticks out with an outdegree of 4,896, meaning that the user retweeted nearly 5,000 different users. The weighted outdegree of \textit{ameliebaldwin} is 9,243, which includes multiple retweets of the same user. Since the weighted outdegree is significantly higher than the unweighted one, this means that \textit{ameliebaldwin} retweeted a large number of users only a few times, rather than retweeting the same small number of users over and over again. The category and community allocation disagree for \textit{ameliebaldwin}. While the qualitative analysis by Linvill/Warren \cite*{linvill_troll_2018} found the user to be a right troll, the community detection algorithm did not find it to belong one of the major right troll communities. This exact pattern of disagreement reappears for three other users in Table 3. Subsequent to \textit{ameliebaldwin}, there is a group of accounts retweeting more than 2,000 different users, which is mainly dominated by right trolls following the categorization, but also with partial disagreement, following the above-mentioned pattern. The fourth ranked user \textit{giselleevns} sticks out for having the most followers in the ranking with 24,344. With a mean number of followers of 3,022 and a maximum of 61,109, \textit{giselleevns} appears to be one of the most followed accounts in the dataset. Though, it needs to be noted, that information on followers is only available for troll accounts in our dataset. Contrary to the mostly right troll dominated top ten ranked outdegree users, \textit{giselleevns} was allocated to the hashtager community, with disagreement of Linvill/Warren \cite*{linvill_troll_2018}, who could not attribute the account to a category. When ranking the account for weighted outdegree, as can be seen in Table 4, the picture slightly changes. While some accounts like \textit{ameliebaldwin} and \textit{giselleevns} remain in high-ranked positions, six left troll accounts are now in the ranking, for which category and community allocation mostly agrees.
 
 \begin{table}[!htbp] \centering 
-  \caption{Top 10 Users ranked by Weighted Outdegree} 
-  \label{tab:wout} 
-\begin{tabular}{@{\extracolsep{5pt}} cccccc} 
+\begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Followers & Outdegree & Outdegree\_Weighted \\ 
+User & Community & Category & Followers & Outdegree & Outdegree weighted \\ 
 \hline \\[-1.8ex] 
 ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
 hyddrox & Other & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
@@ -256,18 +255,20 @@ datwisenigga & Other & LeftTroll & $904$ & $1,540$ & $3,196$ \\
 willisbonnerr & Left & LeftTroll & $571$ & $1,563$ & $3,155$ \\ 
 melanymelanin & Other & LeftTroll & $963$ & $1,079$ & $3,071$ \\ 
 \hline \\[-1.8ex] 
-\end{tabular} 
+\end{tabular*} 
+  \caption{Top 10 users ranked by weighted outdegree} 
+  \label{tab:wout} 
 \end{table} 
 
 The highest ranked left troll account \textit{mrclydepratt} has a weighted outdegree of 3,262 and an unweighted one of 914. Compared to the top ranked presumably right troll accounts, the left troll accounts approximately only have a maximum of half of the unweighted outdegree, but are much closer on the wheighted outdegree. This means that the left trolls retweet a smaller number of accounts more often than right trolls do. This relates to the lower graph density for the left troll community that was computed above.
 
-When examining the accounts with the highest indegrees, contrary to outdegree, both trolls and non-troll accounts are included. We use indegree as a measure for prestige, as it shows how often a user is chosen to be retweeted by the trolls. Table 5 shows the ten highest ranked accounts for unweighted indegree. Here, mostly non-troll accounts are present. Among them, we find  accounts from popular U.S. politicians like Donald Trump or Hillary Clinton, but also accounts of official media outlets like The Hill or Fox News. The account \textit{thehill} has the highest unweighted indegree with 102, which represents the number of unique unique trolls who retweeted him in the data. The indegree quickly declines from 102 for rank one to 53 for rank ten. One account that sticks out is \textit{ten_gop}, who is the only troll among the ten highest indegrees. He is categorized a right troll by both Linvill/Warren \citep*{linvill_troll_2018} and the community detection algorithm. Further investigation shows that \textit{ten_gop} pretended to be an official Republican Party account, which fits his ranking among the other official accounts, even though. %% Page 15: https://assets.documentcloud.org/documents/4380502/Indictment.pdf%%
+When examining the accounts with the highest indegrees, contrary to outdegree, both trolls and non-troll accounts are included. We use indegree as a measure for prestige, as it shows how often a user is chosen to be retweeted by the trolls. Table 5 shows the ten highest ranked accounts for unweighted indegree. Here, mostly non-troll accounts are present. Among them, we find  accounts from popular U.S. politicians like Donald Trump or Hillary Clinton, but also accounts of official media outlets like The Hill or Fox News. The account \textit{thehill} has the highest unweighted indegree with 102, which represents the number of unique unique trolls who retweeted him in the data. The indegree quickly declines from 102 for rank one to 53 for rank ten. One account that sticks out is \textit{ten\_gop}, who is the only troll among the ten highest indegrees. He is categorized a right troll by both Linvill/Warren \cite*{linvill_troll_2018} and the community detection algorithm. Further investigation shows that \textit{ten\_gop} pretended to be an official Republican Party account, which fits his ranking among the other official accounts, even though. %% Page 15: https://assets.documentcloud.org/documents/4380502/Indictment.pdf%%
 
 \begin{table}[!htbp] \centering 
-  \begin{tabular*}{@{\extracolsep{5pt}} lrrrr} 
+  \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Indegree & Indegree\_Weighted \\ 
+User & Community & Category & Indegree & Indegree weighted \\ 
 \hline \\[-1.8ex] 
 thehill & Non-Troll & Non-Troll & $102$ & $358$ \\ 
 realdonaldtrump & Non-Troll & Non-Troll & $100$ & $544$ \\ 
@@ -281,17 +282,17 @@ ten\_gop & Other & RightTroll & $53$ & $430$ \\
 foxnews & Non-Troll & Non-Troll & $53$ & $336$ \\ 
 \hline \\[-1.8ex] 
 \end{tabular*} 
-\caption{Top 10 Users ranked by Indegree} 
+\caption{Top 10 users ranked by indegree} 
   \label{tab:in} 
 \end{table} 
 
 Weighted Indegree does not correlate strongly with the unweighted indegree for the top ten ranked accounts.
 
 \begin{table}[!htbp] \centering 
-  \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill} lrrrr} 
+  \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Indegree & Indegree\_Weighted \\ 
+User & Community & Category & Indegree & Indegree weighted \\ 
 \hline \\[-1.8ex] 
 blicqer & Non-Troll & Non-Troll & $69$ & $2,207$ \\ 
 conservatexian & Non-Troll & Non-Troll & $30$ & $1,082$ \\ 
@@ -313,7 +314,7 @@ For the k-core we limited the network to the core of \(\text{ k } = 10 \), for t
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.95\linewidth]{•}
+\includegraphics[width=0.95\linewidth]{k_graphs.png}
 \caption{k-10-core and k-in-4-core. Node and label size represent degree centrality, colors reflect community.}
 \label{fig:kcore}
 \end{figure}
