@@ -574,9 +574,9 @@ stargazer(w_outdegree_table, summary=F, align=T, title="Top 10 Users ranked by W
 
 ## INDEGREE
 
-rank.indegree <- nodes %>% select(handle, com, 
+rank.indegree <- nodes %>% select(handle, com, account_category,
                                    indegree, indegree_weighted) %>% arrange(-indegree)
-rank.indegree.w <- nodes %>% select(handle, com, 
+rank.indegree.w <- nodes %>% select(handle, com, account_category,
                                    indegree, indegree_weighted) %>% arrange(-indegree_weighted)
 
 ## to investigate in R
@@ -586,10 +586,11 @@ kable(rank.indegree.w[1:10,], caption = "Top 10 Users ranked by weighted indegre
 indegree_table <- rank.indegree[1:10,]
 w_indegree_table <- rank.indegree.w[1:10,]
 
-indegree_table <- indegree_table %>% rename(User = handle, Community = com, Indegree = indegree,
+indegree_table <- indegree_table %>% rename(User = handle, Community = com, Indegree = indegree, 
+                                            Category = account_category,
                                               Indegree_Weighted = indegree_weighted)
 
-w_indegree_table <- w_indegree_table %>% rename(User = handle, Community = com, 
+w_indegree_table <- w_indegree_table %>% rename(User = handle, Community = com, Category = account_category,
                                                   Indegree = indegree,
                                                   Indegree_Weighted = indegree_weighted)
 
