@@ -257,8 +257,7 @@ infomap <- cluster_infomap(g, nb.trials = 10,
 ## running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
 
-
-V(g)$modularity <- modularity$memberships
+V(g)$modularity <- modularity$membership
 V(g)$infomap <- infomap$membership
 
 ## creating a data frame with the communities
@@ -280,12 +279,11 @@ positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFee
 
 ## plot
 png(filename = "figure1.png", width = 700, height = 480)
-figure1 <- ggplot(troll_nodes, aes(x=account_category)) +
+ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend = F 
            ) + scale_x_discrete(limits = positions) + 
     ylab("Number of Trolls") +
-  xlab("")
-figure1 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+  xlab("") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="none")
 dev.off()
 ```
@@ -561,8 +559,8 @@ w_outdegree_table <- w_outdegree_table %>% rename(User = handle, Community = com
                                                   Followers = followers_count, Outdegree = outdegree,
                                                   Outdegree_Weighted = outdegree_weighted)
 
-stargazer(outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Outdegree")
-stargazer(w_outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Outdegree")
+stargazer(outdegree_table, summary=F, align=F, title="Top 10 Users ranked by Outdegree", rownames=F, label = "tab:out")
+stargazer(w_outdegree_table, summary=F, align=F, title="Top 10 Users ranked by Weighted Outdegree", rownames=F, label = "tab:wout")
 
 
 ## INDEGREE
@@ -587,8 +585,8 @@ w_indegree_table <- w_indegree_table %>% rename(User = handle, Community = com, 
                                                   Indegree = indegree,
                                                   Indegree_Weighted = indegree_weighted)
 
-stargazer(indegree_table, summary=F, align=T, title="Top 10 Users ranked by Indegree")
-stargazer(w_indegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Indegree")
+stargazer(indegree_table, summary=F, align=F, title="Top 10 Users ranked by Indegree", rownames=F, label = "tab:in")
+stargazer(w_indegree_table, summary=F, align=F, title="Top 10 Users ranked by Weighted Indegree", rownames=F, label = "tab:win")
 ```
 
 ```{r}
