@@ -250,27 +250,22 @@ g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```{r}
 ## COMMUNITY DETECTION
 
-# running infomap community detection
+## running infomap community detection
 infomap <- cluster_infomap(g, nb.trials = 10,
                           modularity = T)
 
-# running modularity optimization community detection
+## running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
+
+
+V(g)$modularity <- modularity$memberships
+V(g)$infomap <- infomap$membership
 
 ## creating a data frame with the communities
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
 
+## appending new attributes to dataframe
 nodes <- left_join(nodes, df.community, by = "handle")
-
-## re-creating the retweetnetwork based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count, infomap, modularity
-rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
-
-## removing self-ties and multiple edges between users
-rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
-g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
-
-## creating an undirected graph object
-g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include=F}
@@ -288,7 +283,6 @@ png(filename = "figure1.png", width = 700, height = 480)
 figure1 <- ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend = F 
            ) + scale_x_discrete(limits = positions) + 
-  ggtitle("Distribution of Communities among Account Categories by Linvill/Warren (2018)") +
     ylab("Number of Trolls") +
   xlab("")
 figure1 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
@@ -374,10 +368,9 @@ png(filename = "figure2.png", width = 700, height = 480)
 figure2 <- ggplot(troll_nodes, aes(x=com)) +
   geom_bar(aes(fill = as.character(account_category)), show.legend=T 
            ) + scale_x_discrete(limits = positions2) + 
-  ggtitle("Distribution of Account Categories among newly Determined Communities") +
   xlab("Newly Determined Communities") +
   ylab("Number of Trolls") +
-  labs(caption = "Note: Color reflects account categories by Linvill/Warren (2018).")  + theme(legend.title=element_blank())
+  theme(legend.title=element_blank())
 figure2 + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"))
 dev.off()
@@ -600,8 +593,9 @@ stargazer(w_indegree_table, summary=F, align=T, title="Top 10 Users ranked by We
 
 ```{r}
 ## BOX PLOT
-ggplot(troll_nodes, aes(x = com, y = indegree)) +
-  geom_boxplot()
+ggplot(troll_nodes, aes(x = outdegree, y = indegree)) +
+  geom_point(aes(color=com)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right") + xlab("Outdegree") + ylab("Indegree")
 ```
 
 ```{r, inlcude=F}
