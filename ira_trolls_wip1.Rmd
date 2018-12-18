@@ -21,7 +21,7 @@ library(stargazer)
 ```
 
 ```{r, include=F}
-## loading the NBC News dataset and setting working directory
+###Loading the NBC News dataset###
 tweets <- read.csv("Raw Data/tweets.csv", stringsAsFactors = F, sep = ",")
 ```
 
@@ -66,6 +66,8 @@ length(na.omit(handles$account_category)) / length(handles$handle)
 ```
 
 ```{r, include=F}
+###Extracting the retweets out of the tweets text###
+
 ## Code by Yevgeniy Golovchenko: https://golovchenko.github.io/tutorials/snatrolls.html
 
 ## selecting only the retweets
@@ -219,6 +221,7 @@ rts.df <- data.frame(rt.sender, rt.receiver)
 
 ## creating the retweet network based on the sender-receiver df and the node attributes: troll/nontroll, account_type, followers_count
 rts.g <- graph.data.frame(rts.df, directed = T, vertices = nodes)
+rts.g <- simplify(rts.g, remove.multiple = T)
 
 ## removing self-ties and multiple edges between users
 g <- simplify(rts.g, remove.loops = T, remove.multiple = T)
@@ -228,6 +231,19 @@ rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
 
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
+```
+
+```{r, include = F}
+### Subsetting the graph by removing non-trolls ###
+
+## selecting nodes to exclude
+exclude <- V(rts.g)[account_category == "Non-Troll"]
+
+## excluding the nodes
+g.troll <- delete.vertices(rts.g, exclude)
+
+## creating an undirected subgraph
+g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
 ```{r}
@@ -240,10 +256,7 @@ infomap <- cluster_infomap(g, nb.trials = 10,
 # running modularity optimization community detection
 modularity <- cluster_louvain(g.undir)
 
-##attatching the communities to the data frames
-V(g)$modularity <- modularity$membership
-V(g)$infomap <- infomap$membership
-
+## creating a data frame with the communities
 df.community <- data.frame(handle = V(g)$name, infomap = V(g)$infomap, modularity = V(g)$modularity)
 
 nodes <- left_join(nodes, df.community, by = "handle")
@@ -390,6 +403,9 @@ for (com in comms){
   print(length(other_troll_communities$modularity[other_troll_communities$modularity==com])/length(other_troll_communities$modularity))
 }
 
+```
+
+```{r, include=F}
 ## as plot
 positions2 <- c("Right", "Left", "Hashtager", "Other")
 
@@ -489,12 +505,35 @@ dev.off()
 ```
 
 ```{r, include = F}
-## DEGREE AND CORENESS
+###COMPUTING k-cores###
 
-## kcore
-V(g)$Kcore = graph.coreness(g)
-core.df <- graph.coreness(g) %>% as.data.frame()
-## computing degree
+## computing graph coreness undirected and incoreness
+V(g)$kcore = graph.coreness(g)
+V(g)$kincore = graph.coreness(g, mode = "in")
+
+
+# storing a list of nodes that belong to k <=9 and kin <=3
+exclude_k10 <- V(g)[kcore < 10]
+exclude_kin4 <- V(g)[kincore < 4]
+
+# removing these nodes in order to make a k-10-core and a kin-4-core
+k10 <- delete.vertices(g, exclude_k10)
+kin4 <- delete.vertices(g, exclude_kin4)
+
+# inspecting the graphobjects to see number of nodes and edges
+summary(k10)
+1257 / 36889
+18214 / 147428
+#3.4% of the nodes and 12.3% of the edges
+
+summary(kin4)
+1754 / 36889
+11988 / 147428
+#4.8% of the nodes and 8.1% of the edges
+```
+
+```{r, include = F}
+
 V(g)$degree <- degree(g)
 ```
 
@@ -585,6 +624,34 @@ stargazer(table2, summary=F, align=T, title="Troll Statistics")
 #################################################
 #################################################
 From here on, other plots etc. are prepared
+<<<<<<< HEAD
+```{r}
+## understanding user ids, WILL BE TIDIED UP
+length(unique(tweets$user_id))
+## 393
+length(unique(tweets$handle))
+## 453
+
+## Es gibt 393 unique user IDs und 453 unique handles. Da macht es Sinn, zu versuchen die unterschiedlichen handles mit selber ID im datensatz zusammen zulegen, oder?
+
+unique_users <- select(tweets, user_id, handle)
+unique_users <- unique(unique_users)
+
+#summary(tweets_unique_users$user_id)
+
+
+length(na.omit(tweets$user_id))
+## 195,386
+203451 - 195386
+## 8,065 user ids are missing
+
+summary(unique_users$user_id)
+## they are NAs!!!!!!!!!!!!!!!!!!!!!!
+
+summary(tweets$created_str)
+```
+
+=======
 
 ```{r}
 plot(g,
@@ -597,6 +664,7 @@ plot(g,
 ```
 
 
+>>>>>>> adfe9f5e2259ea4dd1057473520bb85f92a8ecfa
 ```{r, include=F}
 ## creating a data frame with weighted and unweighted degree centrality for each profile
 df <- data.frame(name = V(g)$name,
