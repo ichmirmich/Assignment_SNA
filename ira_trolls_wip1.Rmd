@@ -559,8 +559,8 @@ w_outdegree_table <- w_outdegree_table %>% rename(User = handle, Community = com
                                                   Followers = followers_count, Outdegree = outdegree,
                                                   Outdegree_Weighted = outdegree_weighted)
 
-stargazer(outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Outdegree", rownames=F)
-stargazer(w_outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Outdegree", rownames=F)
+stargazer(outdegree_table, summary=F, align=F, title="Top 10 Users ranked by Outdegree", rownames=F, label = "tab:out")
+stargazer(w_outdegree_table, summary=F, align=F, title="Top 10 Users ranked by Weighted Outdegree", rownames=F, label = "tab:wout")
 
 
 ## INDEGREE
@@ -571,8 +571,8 @@ rank.indegree.w <- nodes %>% select(handle, com, account_category,
                                    indegree, indegree_weighted) %>% arrange(-indegree_weighted)
 
 ## to investigate in R
-kable(rank.indegree[1:10,], caption = "Top 10 Users ranked by indegree", label = "out")
-kable(rank.indegree.w[1:10,], caption = "Top 10 Users ranked by weighted indegree", label = "wout")
+kable(rank.indegree[1:10,], caption = "Top 10 Users ranked by indegree")
+kable(rank.indegree.w[1:10,], caption = "Top 10 Users ranked by weighted indegree")
 
 indegree_table <- rank.indegree[1:10,]
 w_indegree_table <- rank.indegree.w[1:10,]
@@ -585,8 +585,8 @@ w_indegree_table <- w_indegree_table %>% rename(User = handle, Community = com, 
                                                   Indegree = indegree,
                                                   Indegree_Weighted = indegree_weighted)
 
-stargazer(indegree_table, summary=F, align=T, title="Top 10 Users ranked by Indegree", rownames=F, label = "in")
-stargazer(w_indegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Indegree", rownames=F, label = "win")
+stargazer(indegree_table, summary=F, align=F, title="Top 10 Users ranked by Indegree", rownames=F, label = "tab:in")
+stargazer(w_indegree_table, summary=F, align=F, title="Top 10 Users ranked by Weighted Indegree", rownames=F, label = "tab:win")
 ```
 
 ```{r}
