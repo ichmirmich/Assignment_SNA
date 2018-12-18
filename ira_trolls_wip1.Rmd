@@ -593,11 +593,11 @@ stargazer(w_indegree_table, summary=F, align=F, title="Top 10 Users ranked by We
 ## BOX PLOT
 ggplot(troll_nodes, aes(x = outdegree, y = indegree)) +
   geom_point(aes(color=com)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right") + xlab("Outdegree") + ylab("Indegree")
+panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right", legend.background = element_blank()) + xlab("Outdegree") + ylab("Indegree")
 ```
 
 ```{r, inlcude=F}
-## GRAPH FILE
+## GRAPHML FILE
 write.graph(g, file="troll_network.graphml", format="graphml")
 ```
 
