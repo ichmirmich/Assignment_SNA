@@ -116,14 +116,14 @@
 
 \section{Introduction}
 
-\section{Agenda-building and astroturfing}
+\section{Agenda-building and Astroturfing}
 
 The process of trying to move an actors agenda to the agenda of other actor's, especially policymakers, is defined as \textit{agenda-building} (\cite[3]{linvill_troll_2018}). This can also be extended to the question of how the public views certain issues, usually by analyzing media coverage of those issues: ``Agenda-building research examines how certain groups, such as those in politics and business, influence what issues journalists cover as well as how the public views issues'' (\cite[434]{parmelee_agenda-building_2014}). Since the rise of social media platforms like Twitter and Facebook, agenda-building takes place in those environments. This is due to journalists drawing heavily on Twitter for their job and, on the other hand, research shows that Twitter is the most popular social media platform for participating in political discussions, which from there are often taken to other media (\cite[435, 437]{parmelee_agenda-building_2014}). Influencing the citizens of another country through the use of media is nothing new, rather it is regularity used in conflicts or during war. ``However, Russia's work on social media has taken agenda-building efforts by nations into a new context'' (\cite[3]{linvill_troll_2018}).
 
 Closely linked to agenda-building is a second phenomenon called (political or/and online) \textit{astroturfing}, which can be characterized as the ``creation of a false or exaggerated impression of grassroots support'' (\cite{harcup_astroturfing_2014}). It describes the strategic and coordinated approach of a group with the aim to create the impression of a certain public opinion, that might not exist in that way. On social media, those groups use many different accounts that post and interact with regular users to create the desired impression. For the purpose of this paper, we see astroturfing as a strategy of agenda-building. The anonymity provided by platforms like Twitter, as well as the covert structure of those groups, make them very hard to discover (\cite[564]{yang_how_2017}). This exploratory study will therefore take the structure of the IRA as a staring point, instead of the presumed agenda behind the organization. Social network analysis, which will be introduced in the next section, offers an excellent tool box to conduct this task.
 
 
-\section{Social network analysis of the IRA retweet network}
+\section{Social Network Analysis of the IRA Retweet Network}
 
 To analyze the structure and possible strategies of the IRA, we will take social network analysis (SNA) as the method of choice. The data-driven character of SNA -- the notion of people relating to each other, and the significance put into the structure and strength of those relations being almost the only one (\cite[982]{golovchenko_state_2018}) -- makes it especially viable for our exploratory approach. SNA conceptualizes the linkages between actors as \enquote{channels for transfer or \enquote{flow} of resources}, while the actors themselves are seen as ``interdependent rather than independent, autonomous units'' (\cite[4]{wasserman_social_1994}). Therefore, the different actor attributes are seen as emerging out of their relations and not vice versa, as in most other quantitative analyses (\cite[8]{wasserman_social_1994}). This allows us to ignore the question of the actual people behind different accounts and tell something about the IRA and its structure, as well as its strategy, as a whole. The most important relation to analyze how the IRA uses astroturfing as a strategy for agenda-building is the distribution of information, in this case via retweets. Accordingly, the foundation of this paper will be a social network consisting of Twitter accounts as nodes and retweets as edges (or linkages).
 
@@ -132,52 +132,48 @@ To analyze the structure and possible strategies of the IRA, we will take social
 
 We will use a dataset, published by NBC News (\cite*{popken_twitter_2018}), consisting of 203,451 Tweets by 453 accounts between July 2014 and September 2017, which were linked to the IRA by an official document handed over to US Congress by Twitter. Twitter justifies this linking by referring to ``third party sources'', which makes it impossible to reconstruct or evaluate their method. Therefore, we have to assume those accounts' links to the IRA to be correct, as it is the best evaluation available.
 
-To create the social network, we need to clean the data: First, we drop any of the tweets that are not retweets, which leaves us with 147,428 retweets by 453 troll accounts. Second, 120 trolls, who did not retweet at all, were dropped accordingly. Our dataset now consists a set of 333 unique troll Twitter handles\footnote{A Twitter handle is the screen name of a Twitter account that can be changed by the users.}, who are retweeting others. A variable stating the unique User ID is used to validate uniqueness of the users, showing that there are indeed no duplicate User IDs in the dataset. Since, we only have information about who these 333 accounts did retweet, but not by whom they were retweeted, the network is ego-centered around the group of 333 trolls. Of these 333 trolls, 151 (ca 45\%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (ca 55\%) trolls only retweeted others, but were not retweeted themselves, making them only senders.\footnote{We define a retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the retweet receiver.} A third group of 71 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 404. These 71 trolls were retweeted by others, though did not send retweets themselves. Finally, the big body of users in the dataset consists of 36,485 users, who are retweeted by the trolls, but are not themselves categorized as trolls by Twitter. Overall, there are 36,889 unique twitter users in the dataset, 404 classified trolls and 36,485 non-trolls. The retweets contain relational information about one user retweeting another, therefore creating a directional edge between the two. Thus, the graph is a directed, ego-centered network of 404 IRA accounts with 36,889 unique Twitter accounts as nodes and edges representing retweets from the sender to the receiver.
+To create the social network, we need to clean the data: First, we drop any of the tweets that are not retweets, which leaves us with 147,428 retweets by 453 troll accounts. Second, 120 trolls, who did not retweet at all, were dropped accordingly. Our dataset now consists a set of 333 unique troll Twitter handles\footnote{A Twitter handle is the screen name of a Twitter account that can be changed by the users.}, who are retweeting others. A variable stating the unique User ID is used to validate uniqueness of the users, showing that there are indeed no duplicate User IDs in the dataset. Since, we only have information about who these 333 accounts did retweet, but not by whom they were retweeted, the network is ego-centered around the group of 333 trolls. Of these 333 trolls, 151 (ca 45\%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (ca 55\%) trolls only retweeted others, but were not retweeted themselves, making them only senders.\footnote{We define a retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the retweet receiver.} A third group of 71 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 404. These 71 trolls were retweeted by others, though did not send retweets themselves. Finally, the big body of users in the dataset consists of 36,485 users, who are retweeted by the trolls, but are not themselves categorized as trolls by Twitter. Table 1 gives a first overview over out dataset. Overall, there are 36,889 unique twitter users in the dataset, 404 classified trolls and 36,485 non-trolls. The retweets contain relational information about one user retweeting another, therefore creating a directional edge between the two. Thus, the graph is a directed, ego-centered network of 404 IRA accounts with 36,889 unique Twitter accounts as nodes and edges representing retweets from the sender to the receiver.
 
-To further extend our data and our scope of analysis, we are adding additional qualitative information on the IRA trolls, provided by Darren Linvill and Patrick Lee Warren (\cite*{linvill_troll_2018}) via the online news outlet FiveThirtyEight (citation). Linvill and Warren conduct a qualitative analysis, categorizing a sample of 1,133 IRA troll accounts by examining the tweet content and the account names, applying a temporal analysis of the trolls tweeting behavior after. They ``identified five categories of IRA-associated Twitter handles, each with unique patterns of behaviors: \textit{Right Troll}, \textit{Left Troll}, \textit{Newsfeed}, \textit{Hashtag Gamer}, and \textit{Fearmonger}.'' (\cite[6]{linvill_troll_2018}). In addition, there are three categories, which are not used within their analysis, those being \textit{Non-English}, \textit{Commercial} and \textit{Unknown}. The categories \textit{Right Troll} and \textit{Left Troll} need little explanation, as they include users who broadcasted right-leaning populist and socially liberal messages. \textit{Hashtag Gamers} are users who are playing word games on Twitter, mostly non-political, though sometimes including left- or right-leaning messages. \textit{Newsfeed} Trolls are posing as local US News Agencies, mostly linking to legitimate news content, often with a pro-Russian perspective. Fearmongers spread news of crisis events such as Tweets about salmonella infections. The \textit{Non-English} troll category includes users who tweeted in other languages than English, predominately Russian, some German and little French and Spanish. \textit{Commercial} Trolls are not included in our dataset. Finally, users were categorized as \textit{Unknown}, if they could not be assigned to other categories for lack of information in their tweets. These categories will be included in this paper's analysis, since might be interesting to see how they interact with the other trolls. We are appending Linvill and Warren's account categories to our data, finding categories are available for 394 of the 404 troll handles in our dataset, meaning that around 98\% of the trolls in our dataset are categorized.
- 
-As another attribute, we are appending information on the count of followers of the troll accounts from a second dataset provided by NBC news. The information on the count of followers provided only includes one figure and does not vary over time, without specification of when these follower counts were obtained. We will assume that they are at least to some degree representative and use them as a heuristic. 
-
-Lastly, we are using the full time period of retweets, from July 2014 to September 2017. This paper is not interested in a time period preceding a specific event, like an election or a specific trending discussion, but rather strategic behavior of the trolls in general. That is why it seems to be the right approach to include all of the Tweets in the analysis.
-
-
-% Table created by stargazer v.5.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
 \begin{table}[!htbp] \centering 
-  \caption{} 
+  \caption{User Statistics} 
   \label{} 
 \begin{tabular}{@{\extracolsep{5pt}} cccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
 User & N & Senders & Receivers \\ 
 \hline \\[-1.8ex] 
-Troll & 404 & 182 & 222 \\ 
-Non-Troll & 36,485 & 0 & 36,485 \\
-\hline \\[-1.8ex]  
+Troll & 404 & 333 & 222 \\ 
+Non-Troll & 36,485 & 0 & 36,485 \\ 
 Total & 36,889 & 333 & 36,707 \\ 
 \hline \\[-1.8ex] 
 \end{tabular} 
 \end{table} 
 
-% Table created by stargazer v.5.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
+To further extend our data and our scope of analysis, we are adding additional qualitative information on the IRA trolls, provided by Darren Linvill and Patrick Lee Warren (\cite*{linvill_troll_2018}) via the online news outlet FiveThirtyEight (citation). Linvill and Warren conduct a qualitative analysis, categorizing a sample of 1,133 IRA troll accounts by examining the tweet content and the account names, applying a temporal analysis of the trolls tweeting behavior after. They ``identified five categories of IRA-associated Twitter handles, each with unique patterns of behaviors: \textit{Right Troll}, \textit{Left Troll}, \textit{Newsfeed}, \textit{Hashtag Gamer}, and \textit{Fearmonger}.'' (\cite[6]{linvill_troll_2018}). In addition, there are three categories, which are not used within their analysis, those being \textit{Non-English}, \textit{Commercial} and \textit{Unknown}. The categories \textit{Right Troll} and \textit{Left Troll} need little explanation, as they include users who broadcasted right-leaning populist and socially liberal messages. \textit{Hashtag Gamers} are users who are playing word games on Twitter, mostly non-political, though sometimes including left- or right-leaning messages. \textit{Newsfeed} Trolls are posing as local US News Agencies, mostly linking to legitimate news content, often with a pro-Russian perspective. Fearmongers spread news of crisis events such as Tweets about salmonella infections. The \textit{Non-English} troll category includes users who tweeted in other languages than English, predominately Russian, some German and little French and Spanish. \textit{Commercial} Trolls are not included in our dataset. Finally, users were categorized as \textit{Unknown}, if they could not be assigned to other categories for lack of information in their tweets. These categories will be included in this paper's analysis, since might be interesting to see how they interact with the other trolls. We are appending Linvill and Warren's account categories to our data, finding categories are available for 394 of the 404 troll handles in our dataset, meaning that around 98\% of the trolls in our dataset are categorized. Table 2 shows the distribution of the categories among our dataset.
+
 \begin{table}[!htbp] \centering 
   \caption{Troll Statistics} 
   \label{} 
-\begin{tabular}{@{\extracolsep{5pt}} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} D{.}{.}{-3} }
+\begin{tabular}{@{\extracolsep{5pt}} ccccc} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-\multicolumn{1}{c}{Category} & \multicolumn{1}{c}{N} & \multicolumn{1}{c}{Senders} & \multicolumn{1}{c}{Receivers} & \multicolumn{1}{c}{Average\_Followers} \\ 
+Category & N & Senders & Receivers & Average\_Followers \\ 
 \hline \\[-1.8ex] 
-\multicolumn{1}{c}{Right} & \multicolumn{1}{c}{101} & \multicolumn{1}{c}{75} & \multicolumn{1}{c}{90} & \multicolumn{1}{c}{4649} \\ 
-\multicolumn{1}{c}{Left} & \multicolumn{1}{c}{110} & \multicolumn{1}{c}{104} & \multicolumn{1}{c}{48} & \multicolumn{1}{c}{1783} \\ 
-\multicolumn{1}{c}{Hashtag Gamer} & \multicolumn{1}{c}{61} & \multicolumn{1}{c}{43} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{3021} \\ 
-\multicolumn{1}{c}{Non-English} & \multicolumn{1}{c}{106} & \multicolumn{1}{c}{100} & \multicolumn{1}{c}{7} & \multicolumn{1}{c}{2127} \\ 
-\multicolumn{1}{c}{Newsfeed} & \multicolumn{1}{c}{11} & \multicolumn{1}{c}{1} & \multicolumn{1}{c}{10} & \multicolumn{1}{c}{16446} \\ 
-\multicolumn{1}{c}{Fearmonger} & \multicolumn{1}{c}{4} & \multicolumn{1}{c}{0} & \multicolumn{1}{c}{4} & \multicolumn{1}{c}{0} \\ 
-\multicolumn{1}{c}{Unknown} & \multicolumn{1}{c}{11} & \multicolumn{1}{c}{10} & \multicolumn{1}{c}{3} & \multicolumn{1}{c}{3306} \\ 
-\multicolumn{1}{c}{Total} & \multicolumn{1}{c}{404} & \multicolumn{1}{c}{333} & \multicolumn{1}{c}{222} & \multicolumn{1}{c}{4476} \\ 
+Right & 101 & 75 & 90 & 4649 \\ 
+Left & 110 & 104 & 48 & 1783 \\ 
+Hashtag Gamer & 61 & 43 & 60 & 3021 \\ 
+Non-English & 106 & 100 & 7 & 2127 \\ 
+Newsfeed & 11 & 1 & 10 & 16446 \\ 
+Fearmonger & 4 & 0 & 4 & 0 \\ 
+Unknown & 11 & 10 & 3 & 3306 \\ 
+Total & 404 & 333 & 222 & 4476 \\ 
 \hline \\[-1.8ex] 
 \end{tabular} 
-\end{table}
+\end{table} 
+ 
+As another attribute, we are appending information on the count of followers of the troll accounts from a second dataset provided by NBC news. The information on the count of followers provided only includes one figure and does not vary over time, without specification of when these follower counts were obtained. We will assume that they are at least to some degree representative and use them as a heuristic. Table 2 gives the average number of followers for each account category.
+
+Lastly, we are using the full time period of retweets, from July 2014 to September 2017. This paper is not interested in a time period preceding a specific event, like an election or a specific trending discussion, but rather strategic behavior of the trolls in general. That is why it seems to be the right approach to include all of the Tweets in the analysis.
 
 \subsection{Methods}
 
@@ -198,7 +194,6 @@ We run a modularity-based community detection, following the Louvain Method (\ci
 Next, the graph densities are calculated for the subgraphs of our newly determined communities. Figure 3 shows the graph densities for the three communities for both directed and undirected versions of each subgraph. As a mode for creating an undirected graph from a directed one, we chose too keep a tie for every relationship that is only defined with a single directional tie, but also to collapse all reciprocal ties into one tie in the undirected graph. This avoids having multiple ties in one relationship. First of all, we see that the undirected subgraphs' densities are approximately twice as high as directed ones, with only minor deficits. With our mode of creating an undirected graph, we can interpret this that way, that there are not many reciprocal ties in the subgraphs. If there was a considerable amount of reciprocal ties, they would cause a higher density of the directed subgraph in comparison to the undirected one (>50\%).
 %% hier figure3.png, title: "Graph Density for Community Subgraphs", Notes: evtl. Graph density formel nochmal
 Examining the magnitude of densities across different community subgraphs, we find that the hashtager community is the most dense by a significant margin. Approximately 17.7\% of all possible ties are present for the undirected subgraph. This could relate to the nature of this community. As laid out above, hashtag gamers retweet themselves playing a word game, which means that it appears to consitute this community's cohesion to retweet one another frequently. Right trolls have the second largest density with 7.4\%, which is more than six times larger than the left community's density of 1.2\%, looking at the numbers for the undirected graphs.
-
 
 \section{Discussion}
 

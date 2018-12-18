@@ -211,6 +211,7 @@ nodes$account_category.y <- replace(nodes$account_category.y, is.na(nodes$accoun
 nodes$troll.y <- replace(nodes$troll.y, is.na(nodes$troll.y), "non-troll")
 nodes <- select(nodes, handle, troll.y, account_category.y, followers_count.y) %>% rename(account_category = account_category.y)
 nodes <- nodes %>% rename(troll = troll.y)
+nodes <- nodes %>% rename(followers_count = followers_count.y)
 ```
 
 ```{r, include = F}
@@ -533,30 +534,79 @@ summary(kin4)
 ```
 
 ```{r, include = F}
+## DEGREE
 
-V(g)$degree <- degree(g)
+## Creating degree df
+df_degree <- data.frame(handle = V(g)$name,
+                 indegree = degree(g,mode='in'),
+                 indegree_weighted = degree(rts.g, mode ="in"),
+                 outdegree = degree(g,mode='out'),
+                 outdegree_weighted = degree(rts.g, mode = "out"))
+nodes <- left_join(nodes, df_degree)
+troll_nodes <- left_join(troll_nodes, df_degree)
+
+
+## OUTDEGREE
+rank.outdegree <- nodes %>% select(handle, com, account_category, followers_count, 
+                                   outdegree, outdegree_weighted) %>% arrange(-outdegree)
+rank.outdegree.w <- nodes %>% select(handle, com, account_category, followers_count, 
+                                   outdegree, outdegree_weighted) %>% arrange(-outdegree_weighted)
+
+## to investigate in R
+kable(rank.outdegree[1:10,], caption = "Top 10 users ranked by outdegree")
+kable(rank.outdegree.w[1:10,], caption = "Top 10 users ranked by weighted outdegree")
+
+outdegree_table <- rank.outdegree[1:10,]
+w_outdegree_table <- rank.outdegree.w[1:10,]
+
+outdegree_table <- outdegree_table %>% rename(User = handle, Community = com, Category = account_category,
+                                              Followers = followers_count, Outdegree = outdegree,
+                                              Outdegree_Weighted = outdegree_weighted)
+
+w_outdegree_table <- w_outdegree_table %>% rename(User = handle, Community = com, 
+                                                  Category = account_category,
+                                                  Followers = followers_count, Outdegree = outdegree,
+                                                  Outdegree_Weighted = outdegree_weighted)
+
+stargazer(outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Outdegree")
+stargazer(w_outdegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Outdegree")
+
+
+## INDEGREE
+
+rank.indegree <- nodes %>% select(handle, com, 
+                                   indegree, indegree_weighted) %>% arrange(-indegree)
+rank.indegree.w <- nodes %>% select(handle, com, 
+                                   indegree, indegree_weighted) %>% arrange(-indegree_weighted)
+
+## to investigate in R
+kable(rank.indegree[1:10,], caption = "Top 10 Users ranked by indegree")
+kable(rank.indegree.w[1:10,], caption = "Top 10 Users ranked by weighted indegree")
+
+indegree_table <- rank.indegree[1:10,]
+w_indegree_table <- rank.indegree.w[1:10,]
+
+indegree_table <- indegree_table %>% rename(User = handle, Community = com, Indegree = indegree,
+                                              Indegree_Weighted = indegree_weighted)
+
+w_indegree_table <- w_indegree_table %>% rename(User = handle, Community = com, 
+                                                  Indegree = indegree,
+                                                  Indegree_Weighted = indegree_weighted)
+
+stargazer(indegree_table, summary=F, align=T, title="Top 10 Users ranked by Indegree")
+stargazer(w_indegree_table, summary=F, align=T, title="Top 10 Users ranked by Weighted Indegree")
+```
+
+```{r}
+## BOX PLOT
+ggplot(troll_nodes, aes(x = com, y = indegree)) +
+  geom_boxplot()
 ```
 
 ```{r, inlcude=F}
-## exporting the graph object as a graphml file 
+## GRAPH FILE
 write.graph(g, file="troll_network.graphml", format="graphml")
 ```
-
-#################################
-```{r}
-## WIP
-## Vizualising communites
-
-plot(g.troll.right.undir,
-     vertex.size = 20,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = V(g.troll.right.undir)$com
-     )
-
-```
-
-
 
 ```{r, include=F}
 ## TABLE 1
@@ -568,7 +618,7 @@ Receivers <- c("222", "36,485", "36,707")
 
 table1 <- cbind(User, N, Senders, Receivers)
 
-stargazer(table1, summary=F, align=T, title="User Statistics")
+stargazer(table1, summary=F, align=F, title="User Statistics")
 ```
 
 ```{r, include=F}
@@ -616,7 +666,7 @@ Average_Followers <- c(round(mean(na.omit(right_trolls$followers_count), digits=
 
 table2 <- cbind(Category, N, Senders, Receivers, Average_Followers)
 
-stargazer(table2, summary=F, align=T, title="Troll Statistics")
+stargazer(table2, summary=F, align=F, title="Troll Statistics")
 ```
 
 
@@ -624,34 +674,6 @@ stargazer(table2, summary=F, align=T, title="Troll Statistics")
 #################################################
 #################################################
 From here on, other plots etc. are prepared
-<<<<<<< HEAD
-```{r}
-## understanding user ids, WILL BE TIDIED UP
-length(unique(tweets$user_id))
-## 393
-length(unique(tweets$handle))
-## 453
-
-## Es gibt 393 unique user IDs und 453 unique handles. Da macht es Sinn, zu versuchen die unterschiedlichen handles mit selber ID im datensatz zusammen zulegen, oder?
-
-unique_users <- select(tweets, user_id, handle)
-unique_users <- unique(unique_users)
-
-#summary(tweets_unique_users$user_id)
-
-
-length(na.omit(tweets$user_id))
-## 195,386
-203451 - 195386
-## 8,065 user ids are missing
-
-summary(unique_users$user_id)
-## they are NAs!!!!!!!!!!!!!!!!!!!!!!
-
-summary(tweets$created_str)
-```
-
-=======
 
 ```{r}
 plot(g,
@@ -674,34 +696,4 @@ df <- data.frame(name = V(g)$name,
                  indegree_weighted = degree(rts.g, mode = "in"),
                  outdegree = degree(g, mode= 'out'),
                  outdegree_weighted = degree(rts.g, mode = "out"))
-```
-
-```{r, inlude=F}
-## ranking users by indegree
-rank.indegree <- df %>% select(name, troll, account_category, indegree,
-                          indegree_weighted) %>% arrange(-indegree)
-## ranking users b weigted indegree n users * n retweets
-rank.indegree.w <- df %>% select(name, troll, account_category, indegree,
-                          indegree_weighted) %>% arrange(-indegree_weighted)
-```
-
-```{r, echo=F}
-kable(rank.indegree[1:10,], caption = "Top 10 profiles ranked by indegree")
-```
-
-```{r, echo=F}
-kable(rank.indegree.w[1:10,], caption = "Top 10 profiles ranked by weighted indegree")
-```
-
-```{r}
-## ranking users by outdegree
-rank.outdegree <- df %>% select(name, troll, account_category, outdegree,
-                          outdegree_weighted) %>% arrange(-outdegree)
-## ranking users b weigted indegree n users * n retweets
-rank.outdegree.w <- df %>% select(name, troll, account_category, outdegree,
-                          outdegree_weighted) %>% arrange(-outdegree_weighted)
-```
-
-```{r}
-kable(rank.outdegree[1:10,], caption = "Top 10 profiles ranked by outdegree")
 ```
