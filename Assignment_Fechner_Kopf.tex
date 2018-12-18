@@ -78,9 +78,9 @@
 %\renewcommand*\l@part[2]{\partbackup{#1}{}}
 %\makeatother
 
-\clubpenalty = 10000
-\widowpenalty = 10000
-\displaywidowpenalty = 10000
+%\clubpenalty = 10000
+%\widowpenalty = 10000
+%\displaywidowpenalty = 10000
 
 %Verlinktes ToC
 \usepackage[colorlinks, pdfpagelabels, pdfstartview=FitH, bookmarksopen=true, bookmarksnumbered=true, linkcolor=black, urlcolor=black, plainpages=false, hypertexnames=false, citecolor=black]{hyperref}
@@ -135,7 +135,7 @@ We will use a dataset, published by NBC News (\cite*{popken_twitter_2018}), cons
 
 To create the social network, we need to clean the data: First, we drop any of the tweets that are not retweets, which leaves us with 147,428 retweets by 453 troll accounts. Second, 120 trolls, who did not retweet at all, were dropped accordingly. Our dataset now consists a set of 333 unique troll Twitter handles\footnote{A Twitter handle is the screen name of a Twitter account that can be changed by the users.}, who are retweeting others. A variable stating the unique User ID is used to validate uniqueness of the users, showing that there are indeed no duplicate User IDs in the dataset. Since, we only have information about who these 333 accounts did retweet, but not by whom they were retweeted, the network is ego-centered around the group of 333 trolls. Of these 333 trolls, 151 (ca 45\%) retweeted others and were themselves retweeted by other trolls, thus being both sender and receiver. 182 (ca 55\%) trolls only retweeted others, but were not retweeted themselves, making them only senders.\footnote{We define a retweet sender as the person retweeting an original Tweet by another person, who, accordingly, is the retweet receiver.} A third group of 71 trolls was found by looking at who was retweeted by the original group of trolls in the data, thus increasing the number of trolls in our data to a group of 404. These 71 trolls were retweeted by others, though did not send retweets themselves. Finally, the big body of users in the dataset consists of 36,485 users, who are retweeted by the trolls, but are not themselves categorized as trolls by Twitter. Table~\ref{tab:userstat} gives a first overview over out dataset. Overall, there are 36,889 unique twitter users in the dataset, 404 classified trolls and 36,485 non-trolls. The retweets contain relational information about one user retweeting another, therefore creating a directional edge between the two. Thus, the graph is a directed, ego-centered network of 404 IRA accounts with 36,889 unique Twitter accounts as nodes and edges representing retweets from the sender to the receiver.
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
 \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
@@ -152,7 +152,7 @@ Total & 36,889 & 333 & 36,707 \\
 
 To further extend our data and our scope of analysis, we are adding additional qualitative information on the IRA trolls, provided by Darren Linvill and Patrick Lee Warren (\cite*{linvill_troll_2018}) via the online news outlet FiveThirtyEight (citation). Linvill and Warren conduct a qualitative analysis, categorizing a sample of 1,133 IRA troll accounts by examining the tweet content and the account names, applying a temporal analysis of the trolls tweeting behavior after. They ``identified five categories of IRA-associated Twitter handles, each with unique patterns of behaviors: \textit{Right Troll}, \textit{Left Troll}, \textit{Newsfeed}, \textit{Hashtag Gamer}, and \textit{Fearmonger}.'' (\cite[6]{linvill_troll_2018}). In addition, there are three categories, which are not used within their analysis, those being \textit{Non-English}, \textit{Commercial} and \textit{Unknown}. The categories \textit{Right Troll} and \textit{Left Troll} need little explanation, as they include users who broadcasted right-leaning populist and socially liberal messages. \textit{Hashtag Gamers} are users who are playing word games on Twitter, mostly non-political, though sometimes including left- or right-leaning messages. \textit{Newsfeed} Trolls are posing as local US News Agencies, mostly linking to legitimate news content, often with a pro-Russian perspective. Fearmongers spread news of crisis events such as Tweets about salmonella infections. The \textit{Non-English} troll category includes users who tweeted in other languages than English, predominately Russian, some German and little French and Spanish. \textit{Commercial} Trolls are not included in our dataset. Finally, users were categorized as \textit{Unknown}, if they could not be assigned to other categories for lack of information in their tweets. These categories will be included in this paper's analysis, since might be interesting to see how they interact with the other trolls. We are appending Linvill and Warren's account categories to our data, finding categories are available for 394 of the 404 troll handles in our dataset, meaning that around 98\% of the trolls in our dataset are categorized. Table~\ref{tab:trollstat} shows the distribution of the categories among our dataset.
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
 \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
@@ -188,11 +188,19 @@ Finally, we will look at the most engaged users in the network to identify the s
 
 \section{Analysis}
 
-In the preceding chapter, the data and methods that form the basis of our analysis have been introduced. Now, we will present the results of these measurements in four steps. First, the results of the modularity community detection algorithm are illustrated and new communities are established, based on our findings, as well as the qualitative coding of Linvill and Warren. Second, graph densities are compared between these communities. Third degree centrality indices are analyzed for the whole graph to identify the most active IRA accounts and the most prestigious accounts. Finally, we will take a look at the k-cores, to detect information super-spreaders and the connectedness between the clusters. In the last section, we then discuss the findings regarding the strategy and structure of the IRA.
+In the preceding chapter, the data and methods that form the basis of our analysis have been introduced. Figure~\ref{fig:graph} shows the entire retweet network consisting of three main clusters. We will focus our analysis on those clusters in four steps. First, the results of the modularity community detection algorithm are illustrated and new communities are established, based on our findings, as well as the qualitative coding of Linvill and Warren. Second, graph densities are compared between these communities. Third, degree centrality indices are analyzed for the whole graph to identify the most active IRA accounts and the most prestigious accounts. Finally, we will take a look at the k-cores, to detect information super-spreaders and the connectedness between the clusters. In the last section, we then discuss the findings regarding the strategy and structure of the IRA.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\linewidth]{Network_modularity.png}
+\caption{The entire retweet network. Nodes represent profiles, while a connection represents at least one retweet between them. Node and label size represent popularity (indegree). Colors represent the communities detected by the Louvain algorithm.}
+\label{fig:graph}
+\end{figure}
+
 
 \subsection{Results}
 
-We run a modularity-based community detection, following the Louvain Method (\cite{blondel_fast_2008}). Figure 1 shows the distribution of algorithm communities among the qualitative account categories created by Linvill/Warren (\cite*{linvill_troll_2018}). For further analysis, we want to rely on communities that were computed with the Louvain Method, since they originate from the structure of ties within our dataset and this appears to be more consistent with the overall method of SNA. To not exceed the scope of this paper, we narrow down our analysis by merging all minor communities below an arbitrary threshold of 50 nodes, since they presumably bear more risk of yielding unrepresentative findings. We then apply the qualitative categorization to our newly distincted communities. In Figure 1, we see that some categories overlap strongly with distinct communities, whereas other categories show a rather mixed composition in our data. 94\% of the left troll category is captured with one community, which will be our new left troll community. The hashtager community is 90\% captured by one community, which will be our new hashtager troll community. 90\% of the right troll category consist of two major communities with shares of 52\% and 38\%, which we merge to one new right troll community. We justify this merger by arguing that these two communities could represent distinct right-wing groups underneath a general right-wing community (e.g. Conspiracy Theorist vs. Alt Right User). (\cite{kaiser_unite_2018}).  We argue, that for these categories, which are overlapping with at least 90\%, there is sufficient congruence to continue using the qualitative attributes. The non-english troll category consists of multiple communities, with a biggest community share of 27\%. Non of the non-english or other categories passes our threshold community size of 50, which leaves us with four distinct communities: \textit{Right Troll}, \textit{Left Troll}, \textit{Hashtager} and \textit{Other}. It is important to note, that by using this set of communities, we are treating some nodes as e.g. right trolls, even though they have been categorized as left trolls by Linvill/Warren (\cite*{linvill_troll_2018}). This bears the risk of having biased results. Though, with the given incongruence of the account categorization with our detected communities, having some potential bias appears inevitable. In Figure~\ref{fig:distcat}, the distribution of account categories among our new communities is depicted, which illustrates this potential bias.
+We run a modularity-based community detection, following the Louvain Method (\cite{blondel_fast_2008}). Figure~1 shows the distribution of algorithm communities among the qualitative account categories created by Linvill/Warren (\cite*{linvill_troll_2018}). For further analysis, we want to rely on communities that were computed with the Louvain Method, since they originate from the structure of ties within our dataset and this appears to be more consistent with the overall method of SNA. To not exceed the scope of this paper, we narrow down our analysis by merging all minor communities below an arbitrary threshold of 50 nodes, since they presumably bear more risk of yielding unrepresentative findings. We then apply the qualitative categorization to our newly distincted communities. In Figure 1, we see that some categories overlap strongly with distinct communities, whereas other categories show a rather mixed composition in our data. 94\% of the left troll category is captured with one community, which will be our new left troll community. The hashtager community is 90\% captured by one community, which will be our new hashtager troll community. 90\% of the right troll category consist of two major communities with shares of 52\% and 38\%, which we merge to one new right troll community. We justify this merger by arguing that these two communities could represent distinct right-wing groups underneath a general right-wing community (e.g. Conspiracy Theorist vs. Alt Right User). (\cite{kaiser_unite_2018}).  We argue, that for these categories, which are overlapping with at least 90\%, there is sufficient congruence to continue using the qualitative attributes. The non-english troll category consists of multiple communities, with a biggest community share of 27\%. Non of the non-english or other categories passes our threshold community size of 50, which leaves us with four distinct communities: \textit{Right Troll}, \textit{Left Troll}, \textit{Hashtager} and \textit{Other}. It is important to note, that by using this set of communities, we are treating some nodes as e.g. right trolls, even though they have been categorized as left trolls by Linvill/Warren (\cite*{linvill_troll_2018}). This bears the risk of having biased results. Though, with the given incongruence of the account categorization with our detected communities, having some potential bias appears inevitable. In Figure~\ref{fig:distcat}, the distribution of account categories among our new communities is depicted, which illustrates this potential bias.
 
 \begin{figure}[!ht]
 \centering
@@ -214,11 +222,11 @@ Examining the magnitude of densities across different community subgraphs, we fi
 
 We now  analyze the degree centrality of our graph. We start with the outdegree, which we use as a measure for centrality and the weighted outdegree, which gives additional information on the activity of the user. Because of our network is ego-centered around the central group of trolls, only troll accounts have outdegrees. Table~\ref{tab:out} shows the top 10 users ranked by outdegree.
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
 \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Followers & Outdegree & Outdegree weighted \\ 
+User & Community & Category & Followers & \( d_{out}(n_{i}) \) & \( d_{out}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
 ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
 patriotblake & Left & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
@@ -238,11 +246,11 @@ michellearry & Other & RightTroll & $3,229$ & $1,611$ & $2,677$ \\
 
 The firsted ranked user \textit{ameliebaldwin} really sticks out with an outdegree of 4,896, meaning that the user retweeted nearly 5,000 different users. The weighted outdegree of \textit{ameliebaldwin} is 9,243, which includes multiple retweets of the same user. Since the weighted outdegree is significantly higher than the unweighted one, this means that \textit{ameliebaldwin} retweeted a large number of users only a few times, rather than retweeting the same small number of users over and over again. The category and community allocation disagree for \textit{ameliebaldwin}. While the qualitative analysis by Linvill/Warren \cite*{linvill_troll_2018} found the user to be a right troll, the community detection algorithm did not find it to belong one of the major right troll communities. This exact pattern of disagreement reappears for three other users in Table 3. Subsequent to \textit{ameliebaldwin}, there is a group of accounts retweeting more than 2,000 different users, which is mainly dominated by right trolls following the categorization, but also with partial disagreement, following the above-mentioned pattern. The fourth ranked user \textit{giselleevns} sticks out for having the most followers in the ranking with 24,344. With a mean number of followers of 3,022 and a maximum of 61,109, \textit{giselleevns} appears to be one of the most followed accounts in the dataset. Though, it needs to be noted, that information on followers is only available for troll accounts in our dataset. Contrary to the mostly right troll dominated top ten ranked outdegree users, \textit{giselleevns} was allocated to the hashtager community, with disagreement of Linvill/Warren \cite*{linvill_troll_2018}, who could not attribute the account to a category. When ranking the account for weighted outdegree, as can be seen in Table 4, the picture slightly changes. While some accounts like \textit{ameliebaldwin} and \textit{giselleevns} remain in high-ranked positions, six left troll accounts are now in the ranking, for which category and community allocation mostly agrees.
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
 \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Followers & Outdegree & Outdegree weighted \\ 
+User & Community & Category & Followers & \( d_{out}(n_{i}) \) & \( d_{out}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
 ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
 hyddrox & Other & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
@@ -264,11 +272,11 @@ The highest ranked left troll account \textit{mrclydepratt} has a weighted outde
 
 When examining the accounts with the highest indegrees, contrary to outdegree, both trolls and non-troll accounts are included. We use indegree as a measure for prestige, as it shows how often a user is chosen to be retweeted by the trolls. Table 5 shows the ten highest ranked accounts for unweighted indegree. Here, mostly non-troll accounts are present. Among them, we find  accounts from popular U.S. politicians like Donald Trump or Hillary Clinton, but also accounts of official media outlets like The Hill or Fox News. The account \textit{thehill} has the highest unweighted indegree with 102, which represents the number of unique unique trolls who retweeted him in the data. The indegree quickly declines from 102 for rank one to 53 for rank ten. One account that sticks out is \textit{ten\_gop}, who is the only troll among the ten highest indegrees. He is categorized a right troll by both Linvill/Warren \cite*{linvill_troll_2018} and the community detection algorithm. Further investigation shows that \textit{ten\_gop} pretended to be an official Republican Party account, which fits his ranking among the other official accounts, even though. %% Page 15: https://assets.documentcloud.org/documents/4380502/Indictment.pdf%%
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
   \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Indegree & Indegree weighted \\ 
+User & Community & Category & \( d_{in}(n_{i}) \) & \( d_{in}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
 thehill & Non-Troll & Non-Troll & $102$ & $358$ \\ 
 realdonaldtrump & Non-Troll & Non-Troll & $100$ & $544$ \\ 
@@ -288,11 +296,11 @@ foxnews & Non-Troll & Non-Troll & $53$ & $336$ \\
 
 Weighted Indegree does not correlate strongly with the unweighted indegree for the top ten ranked accounts.
 
-\begin{table}[!htbp] \centering 
+\begin{table}[ht] \centering 
   \begin{tabular*}{.95\linewidth}{@{\extracolsep{\fill}} lrrrr} 
 \\[-1.8ex]\hline 
 \hline \\[-1.8ex] 
-User & Community & Category & Indegree & Indegree weighted \\ 
+User & Community & Category & \( d_{in}(n_{i}) \) & \( d_{in}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
 blicqer & Non-Troll & Non-Troll & $69$ & $2,207$ \\ 
 conservatexian & Non-Troll & Non-Troll & $30$ & $1,082$ \\ 
@@ -310,7 +318,7 @@ beforeitsnews & Non-Troll & Non-Troll & $8$ & $399$ \\
   \label{tab:win} 
 \end{table}
 
-For the k-core we limited the network to the core of \(\text{ k } = 10 \), for the k-in-core to \(\ text{ k-in } = 4\), meaning that the users of the k-10-core have been retweeted and/or retweet others at least 10 times and the users of the k-4-in-core have been retweeted at least 4 times, which is the maximum value for k-in in the dataset.\footnote{We disregarded self loops, since they cannot count as new information and are therefore irrelevant for analyzing information spreading.} The original graph consists of 36,889 nodes with 147,428 edges, of which the k-10-core contains 1257 (3.4\%) nodes and 18214 (12.3\%) edges, and the k-4-in-core 1754 (4.8\%) nodes and 11988 (8.1\%) edges respectively. Although the k-in-4-core contains some nodes more, it has far less edges, which is shown in Figure~\ref{fig:kcore}, that depicts both subgraphs. It is immediately apparent, that the k-core still contains the basic structure of the network with its three main clusters, while the k-in-core only consists of one large cluster with mainly right-wing accounts and one very small left-wing cluster. This is contingent with the findings of the degree centrality, which showed that the right-wing trolls have a larger unweighted indegree, while the results are more equal for the unweighted degree. This is no surprise considering the k-in-core is calculated through the indegree. Interestingly, the k-10-core looks very different.\footnote{A quick analysis in Gephi via filtering gives the same results for the k-18-core, when only 271 nodes are left.} Here, the basic structure of the entire network is still intact, which indicates a lot of left and hashtager accounts retweeting right-wing IRA accounts in the k-10-core . In other words, IRA accounts retweet themselves mainly from the left, and hashtager clusters, while right-wing accounts mainly retweet only themselves.
+For the k-core we limited the network to the core of \(\text{ k } = 10 \), for the k-in-core to \(\ text{ k-in } = 4\), meaning that the users of the k-10-core have been retweeted and/or retweet others at least 10 times and the users of the k-4-in-core have been retweeted at least 4 times, which is the maximum value for k-in in the dataset.\footnote{We disregarded self loops, since they cannot count as new information and are therefore irrelevant for analyzing information spreading.} The original graph consists of 36,889 nodes with 147,428 edges, of which the k-10-core contains 1257 (3.4\%) nodes and 18214 (12.3\%) edges, and the k-4-in-core 1754 (4.8\%) nodes and 11988 (8.1\%) edges respectively. Although the k-in-4-core contains some nodes more, it has far less edges, which is shown in Figure~\ref{fig:kcore}, that depicts both subgraphs. It is immediately apparent, that the k-core still contains the basic structure of the network with its three main clusters, while the k-in-core only consists of one large cluster with mainly right-wing accounts and one very small left-wing cluster. This is contingent with the findings of the degree centrality, which showed that the right-wing trolls have a larger unweighted indegree, while the results are more equal for the unweighted degree. This is no surprise considering the k-in-core is calculated through the indegree. Interestingly, the k-10-core looks very different.\footnote{A quick analysis in Gephi via filtering gives the same results for the k-18-core, when only 271 nodes are left.} Here, the basic structure of the entire network is still intact, which indicates a lot of left and hashtager accounts retweeting right-wing IRA accounts in the k-10-core . In other words, IRA accounts retweet other trolls mainly from the left and hashtager clusters, while right-wing accounts mainly retweet themselves.
 
 \begin{figure}[!ht]
 \centering
@@ -318,6 +326,16 @@ For the k-core we limited the network to the core of \(\text{ k } = 10 \), for t
 \caption{k-10-core and k-in-4-core. Node and label size represent degree centrality, colors reflect community.}
 \label{fig:kcore}
 \end{figure}
+
+Since the k-in-core consits mostly of right-wing accounts, a further analysis of the k-10-core seems to be more fruitful. The accounts in the k-10-core are those with the best positions in the network regarding the ability to spread information. We therefore proceed to examine the most active accounts, since they can be considered as the most influential. Figure~\ref{fig:k10in} provides an overview of the 30 accounts with the highest outdegree within the k-10-core, and thus the profiles who retweeted the relevant accounts most often. The profile \textit{ameliebaldwin} has by far the largest outdegree, which puts this account at the central position of the core. Interestingly, of the top 6 profiles, 4 were categorized as \textit{Other} by the community detection algorithm. Looking on Figure~\ref{fig:kcore}, they all are very close to the right-wing community (the same is true for the k-in-core). Linvill and Warren categorized most of them as right-wing as well, which indicates some inaccuracy of the community detection agorithm, i.e. it is to sharp, thus detecting too many communities. Seeing them as right-wing shows a very clear dominance of right-wing profiles concerning information super-spreaders, which is consistent with the our previous findings.
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\linewidth]{k10_figure}
+\caption{Top 30 user regarding outdegree in the k-10-core.}
+\label{fig:k10in}
+\end{figure}
+
 
 \subsection{Discussion}
 
