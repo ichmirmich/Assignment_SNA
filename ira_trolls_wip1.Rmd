@@ -260,7 +260,7 @@ g.undir <- as.undirected(g, mode = "collapse")
 ```
 
 ```{r, include=F}
-## COMMUNITY DETECTION
+## COMMUNITY DETECTION - FIGURE 1
 
 ## appending community variables to troll nodes df
 troll_nodes <- left_join(troll_nodes, df.community, by = "handle")
