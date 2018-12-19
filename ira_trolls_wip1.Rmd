@@ -278,7 +278,7 @@ troll_nodes <- left_join(troll_nodes, df.community, by = "handle")
 positions <- c("LeftTroll", "NonEnglish", "RightTroll", "HashtagGamer", "NewsFeed", "Unknown", "Fearmonger")
 
 ## plot
-png(filename = "figure1.png", width = 700, height = 480)
+png(filename = "final_figure1.png", width = 700, height = 480)
 ggplot(troll_nodes, aes(x=account_category)) +
   geom_bar(aes(fill = as.character(modularity)), show.legend = F 
            ) + scale_x_discrete(limits = positions) + 
@@ -362,7 +362,7 @@ g.undir <- as.undirected(g, mode = "collapse")
 ## account categories among new communities
 positions2 <- c("Right", "Left", "Hashtager", "Other")
 
-png(filename = "figure2.png", width = 700, height = 480)
+png(filename = "final_figure2.png", width = 700, height = 480)
 figure2 <- ggplot(troll_nodes, aes(x=com)) +
   geom_bar(aes(fill = as.character(account_category)), show.legend=T 
            ) + scale_x_discrete(limits = positions2) + 
@@ -597,7 +597,7 @@ stargazer(w_indegree_table, summary=F, align=F, title="Top 10 Users ranked by We
 ```
 
 ```{r}
-## BOX PLOT
+## BOX PLOT, not in paper
 ggplot(troll_nodes, aes(x = outdegree, y = indegree)) +
   geom_point(aes(color=com)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right", legend.background = element_blank()) + xlab("Outdegree") + ylab("Indegree")

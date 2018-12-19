@@ -228,15 +228,15 @@ We now  analyze the degree centrality of our graph. We start with the outdegree,
 \hline \\[-1.8ex] 
 User & Community & Category & Followers & \( d_{out}(n_{i}) \) & \( d_{out}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
-ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
-patriotblake & Left & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
-hyddrox & Other & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
-giselleevns & Other & Unknown & $24,344$ & $2,282$ & $5,403$ \\ 
-cookncooks & Right & RightTroll & $1,468$ & $2,153$ & $2,893$ \\ 
-emileewaren & Hashtager & RightTroll & $1,909$ & $2,116$ & $2,891$ \\ 
-dorothiebell & Other & RightTroll & $1,893$ & $2,010$ & $2,874$ \\ 
+ameliebaldwin & Other & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
+patriotblake & Other & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
+hyddrox & Right & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
+giselleevns & Hashtager & Unknown & $24,344$ & $2,282$ & $5,403$ \\ 
+cookncooks & Other & RightTroll & $1,468$ & $2,153$ & $2,893$ \\ 
+emileewaren & Other & RightTroll & $1,909$ & $2,116$ & $2,891$ \\ 
+dorothiebell & Right & RightTroll & $1,893$ & $2,010$ & $2,874$ \\ 
 baobaeham & Left & LeftTroll & $1,032$ & $1,802$ & $3,215$ \\ 
-michellearry & Other & RightTroll & $3,229$ & $1,611$ & $2,677$ \\ 
+michellearry & Right & RightTroll & $3,229$ & $1,611$ & $2,677$ \\ 
 \_nickluna\_ & Right & RightTroll & $1,457$ & $1,597$ & $2,825$ \\ 
 \hline \\[-1.8ex] 
 \end{tabular*} 
@@ -252,16 +252,16 @@ The first ranked user \textit{ameliebaldwin} sticks out with an outdegree of 4,8
 \hline \\[-1.8ex] 
 User & Community & Category & Followers & \( d_{out}(n_{i}) \) & \( d_{out}(n_{i}) \) weighted \\ 
 \hline \\[-1.8ex] 
-ameliebaldwin & Left & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
-hyddrox & Other & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
-giselleevns & Other & Unknown & $24,344$ & $2,282$ & $5,403$ \\ 
-patriotblake & Left & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
-mrclydepratt & Right & LeftTroll & $914$ & $1,583$ & $3,262$ \\ 
+ameliebaldwin & Other & RightTroll & $2,464$ & $4,896$ & $9,243$ \\ 
+hyddrox & Right & RightTroll & $2,225$ & $2,650$ & $6,788$ \\ 
+giselleevns & Hashtager & Unknown & $24,344$ & $2,282$ & $5,403$ \\ 
+patriotblake & Other & RightTroll & $2,035$ & $2,856$ & $4,106$ \\ 
+mrclydepratt & Left & LeftTroll & $914$ & $1,583$ & $3,262$ \\ 
 brianaregland & Other & LeftTroll & $768$ & $1,360$ & $3,259$ \\ 
 baobaeham & Left & LeftTroll & $1,032$ & $1,802$ & $3,215$ \\ 
-datwisenigga & Other & LeftTroll & $904$ & $1,540$ & $3,196$ \\ 
+datwisenigga & Left & LeftTroll & $904$ & $1,540$ & $3,196$ \\ 
 willisbonnerr & Left & LeftTroll & $571$ & $1,563$ & $3,155$ \\ 
-melanymelanin & Other & LeftTroll & $963$ & $1,079$ & $3,071$ \\ 
+melanymelanin & Left & LeftTroll & $963$ & $1,079$ & $3,071$ \\ 
 \hline \\[-1.8ex] 
 \end{tabular*} 
   \caption{Top 10 users ranked by weighted outdegree} 
@@ -286,7 +286,7 @@ hillaryclinton & Non-Troll & Non-Troll & $61$ & $98$ \\
 joyannreid & Non-Troll & Non-Troll & $58$ & $267$ \\ 
 prisonplanet & Non-Troll & Non-Troll & $56$ & $462$ \\ 
 jamilsmith & Non-Troll & Non-Troll & $55$ & $118$ \\ 
-ten\_gop & Other & RightTroll & $53$ & $430$ \\ 
+ten\_gop & Right & RightTroll & $53$ & $430$ \\ 
 foxnews & Non-Troll & Non-Troll & $53$ & $336$ \\ 
 \hline \\[-1.8ex] 
 \end{tabular*} 
@@ -309,7 +309,7 @@ nine\_oh & Non-Troll & Non-Troll & $11$ & $500$ \\
 prisonplanet & Non-Troll & Non-Troll & $56$ & $462$ \\ 
 zaibatsunews & Non-Troll & Non-Troll & $16$ & $451$ \\ 
 gerfingerpoken & Non-Troll & Non-Troll & $46$ & $434$ \\ 
-ten\_gop & Other & RightTroll & $53$ & $430$ \\ 
+ten\_gop & Right & RightTroll & $53$ & $430$ \\ 
 bizpacreview & Non-Troll & Non-Troll & $17$ & $401$ \\ 
 beforeitsnews & Non-Troll & Non-Troll & $8$ & $399$ \\ 
 \hline \\[-1.8ex] 
@@ -322,7 +322,7 @@ For the k-core we limited the network to the core of \(\text{ k } = 10 \), for t
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=0.95\linewidth]{k_graphs.png}
+\includegraphics[width=0.95\linewidth]{final_k_graphs.png}
 \caption{k-10-core and k-in-4-core. Node and label size represent outdegree centrality, colors reflect community.}
 \label{fig:kcore}
 \end{figure}
