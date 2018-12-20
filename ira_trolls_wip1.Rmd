@@ -1,6 +1,6 @@
 ---
 title: "wip1"
-author: "Johannes Kopf"
+author: "Johannes Kopf, Ole Fechner"
 date: "24 November 2018"
 output: pdf_document
 ---
@@ -232,19 +232,6 @@ rts.g <- simplify(rts.g, remove.loops = T, remove.multiple = F)
 
 ## creating an undirected graph object
 g.undir <- as.undirected(g, mode = "collapse")
-```
-
-```{r, include = F}
-### Subsetting the graph by removing non-trolls ###
-
-## selecting nodes to exclude
-exclude <- V(rts.g)[account_category == "Non-Troll"]
-
-## excluding the nodes
-g.troll <- delete.vertices(rts.g, exclude)
-
-## creating an undirected subgraph
-g.troll.undir <- as.undirected(g.troll, mode = "collapse")
 ```
 
 ```{r}
@@ -597,13 +584,7 @@ stargazer(w_indegree_table, summary=F, align=F, title="Top 10 Users ranked by We
 ```
 
 ```{r}
-## BOX PLOT, not in paper
-ggplot(troll_nodes, aes(x = outdegree, y = indegree)) +
-  geom_point(aes(color=com)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank(), axis.line = element_line(colour = "black"), legend.position="right", legend.background = element_blank()) + xlab("Outdegree") + ylab("Indegree")
-```
-
-```{r}
+###Figure user ranked by indegree in the k-10###
 core_nodes <- filter(nodes, coreness >= 10) %>% arrange(-outdegree)
 incore_nodes <- filter(nodes, incoreness >= 4) %>% arrange(-outdegree)
 
@@ -683,33 +664,4 @@ Average_Followers <- c(round(mean(na.omit(right_trolls$followers_count), digits=
 table2 <- cbind(Category, N, Senders, Receivers, Average_Followers)
 
 stargazer(table2, summary=F, align=F, title="Troll Statistics")
-```
-
-
-
-#################################################
-#################################################
-From here on, other plots etc. are prepared
-
-```{r}
-plot(g,
-     main="K Cores",
-     vertex.size = 20,
-     vertex.label = V(g)$Kcore,
-     vertex.label.color = "black",
-     vertex.label.cex = 1,
-     vertex.color = "white")
-```
-
-
->>>>>>> adfe9f5e2259ea4dd1057473520bb85f92a8ecfa
-```{r, include=F}
-## creating a data frame with weighted and unweighted degree centrality for each profile
-df <- data.frame(name = V(g)$name,
-                 troll = V(g)$troll,
-                 account_category = V(g)$account_category,
-                 indegree=degree(g, mode = 'in'),
-                 indegree_weighted = degree(rts.g, mode = "in"),
-                 outdegree = degree(g, mode= 'out'),
-                 outdegree_weighted = degree(rts.g, mode = "out"))
 ```
