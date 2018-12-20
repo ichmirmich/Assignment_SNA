@@ -581,7 +581,7 @@ rank.indegree.w <- nodes %>% select(handle, com, account_category,
 kable(rank.indegree[1:10,], caption = "Top 10 Users ranked by indegree")
 kable(rank.indegree.w[1:10,], caption = "Top 10 Users ranked by weighted indegree")
 
-indegree_table <- rank.indegree[1:10,]
+  indegree_table <- rank.indegree[1:10,]
 w_indegree_table <- rank.indegree.w[1:10,]
 
 indegree_table <- indegree_table %>% rename(User = handle, Community = com, Indegree = indegree, 
